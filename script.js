@@ -1,4 +1,8 @@
-// 1. Configuración e inicialización única de Firebase
+// Importar los módulos necesarios de Firebase SDK modular
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// Configuración de tu aplicación web de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCqCMLjp7j2XPyZ4GoeWDJScpHEmgIvFBc",
     authDomain: "cuentas-panda-mgb.firebaseapp.com",
@@ -8,17 +12,16 @@ const firebaseConfig = {
     appId: "1:399635180894:web:9be92a7e815a4b9a50b3cf"
 };
 
-// Comprobamos si ya hay una app inicializada para evitar errores
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-// 2. Funciones de Autenticación
-function iniciarSesion() {
+// Funciones de Autenticación
+window.iniciarSesion = function() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    firebase.auth().signInWithEmailAndPassword(email, password)
+    signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             console.log("Sesión iniciada con éxito:", userCredential.user);
             alert("¡Bienvenido a PandaZen Finanzas!");
@@ -29,11 +32,11 @@ function iniciarSesion() {
         });
 }
 
-function registrarUsuario() {
+window.registrarUsuario = function() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    firebase.auth().createUserWithEmailAndPassword(email, password)
+    createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             console.log("Usuario registrado con éxito:", userCredential.user);
             alert("¡Cuenta creada con éxito!");
