@@ -1,34 +1,75 @@
 import { 
-    getAuth, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
     onAuthStateChanged,
     signOut 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Escuchar cambios de estado de sesión (se ejecuta automáticamente al cargar o iniciar sesión)
+// --- CONTROL AUTOMÁTICO DE PANTALLAS ---
 onAuthStateChanged(auth, (user) => {
-    const loginSection = document.getElementById('login-section') || document.getElementById('login-box');
-    const appSection = document.getElementById('app-section') || document.getElementById('app-box');
+    // Busca los contenedores por los nombres más comunes (puedes ajustar el ID en tu HTML si usas otro)
+    const loginSection = document.getElementById('login-section') || document.getElementById('login-box') || document.getElementById('seccionLogin');
+    const appSection = document.getElementById('app-section') || document.getElementById('app-box') || document.getElementById('pantallaPrincipal');
 
     if (user) {
-        // Usuario logueado: Oculta Login, muestra App
+        // Usuario logueado: Oculta la entrada, muestra la app
         if (loginSection) loginSection.style.display = 'none';
         if (appSection) appSection.style.display = 'block';
-        console.log("Usuario dentro de la app:", user.email);
     } else {
-        // Sin sesión: Muestra Login, oculta App
+        // Sin sesión: Muestra la entrada, oculta la app
         if (loginSection) loginSection.style.display = 'block';
         if (appSection) appSection.style.display = 'none';
-        console.log("No hay usuario autenticado");
     }
 });
 
-// Función para Cerrar Sesión
+// --- FUNCIÓN DE INICIO DE SESIÓN ---
+window.iniciarSesion = function() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+        alert("Por favor, rellena todos los campos.");
+        return;
+    }
+
+    signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            console.log("¡Sesión iniciada con éxito!", userCredential.user);
+            // El cambio de pantalla lo hace automáticamente el onAuthStateChanged de arriba
+        })
+        .catch((error) => {
+            console.error("Error al iniciar sesión:", error.message);
+            alert("Error al iniciar sesión: " + error.message);
+        });
+};
+
+// --- FUNCIÓN DE REGISTRO ---
+window.registrarUsuario = function() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+        alert("Por favor, rellena todos los campos para registrarte.");
+        return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            alert("¡Cuenta creada con éxito!");
+            console.log("Usuario registrado:", userCredential.user);
+            // El cambio de pantalla lo hace automáticamente el onAuthStateChanged de arriba
+        })
+        .catch((error) => {
+            console.error("Error al registrar:", error.message);
+            alert("Error al registrar: " + error.message);
+        });
+};
+
+// --- FUNCIÓN PARA CERRAR SESIÓN ---
 window.cerrarSesion = function() {
     signOut(auth).then(() => {
-        alert("Sesión cerrada");
+        alert("Sesión cerrada correctamente");
     }).catch((error) => {
-        console.error("Error al salir:", error);
+        console.error("Error al cerrar sesión:", error);
     });
 };
