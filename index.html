@@ -19,12 +19,13 @@
             <input type="password" id="loginPassword" placeholder="Contraseña" required />
 
             <div class="botones-login">
-            <button id="btnEntrar" onclick="iniciarSesion()">Entrar</button>
-            <button id="btnRegistrar" onclick="registrarUsuario()">Registrarse</button>
+                <button id="btnEntrar" onclick="iniciarSesion()">Entrar</button>
+                <button id="btnRegistrar" onclick="registrarUsuario()">Registrarse</button>
             </div>
         </div>
     </div>
 
+    <!-- PANTALLA PRINCIPAL DE LA APLICACIÓN (Empieza oculta) -->
     <div id="pantallaApp" class="app-container" style="display: none;">
         
         <!-- HEADER Y MASCOTA PANDA ROJO -->
@@ -56,6 +57,11 @@
             </div>
             
             <div class="header-buttons">
+                <!-- Botón de Cerrar Sesión -->
+                <div class="btn-container-manual">
+                    <button id="btnCerrarSesion" class="btn-icon" onclick="cerrarSesion()" title="Cerrar Sesión">🚪</button>
+                    <span class="btn-label">Salir</span>
+                </div>
                 <!-- Botón del libro con la etiqueta "Manual" debajo -->
                 <div class="btn-container-manual">
                     <button id="btnAbrirManual" class="btn-icon" title="Manual de Uso">📖</button>
