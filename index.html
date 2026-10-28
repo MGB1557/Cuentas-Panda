@@ -7,6 +7,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- CONFIGURACIÓN REAL DE FIREBASE -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqCMLjp7j2XPyZ4GoeWDJScpHEmgIvFBc",
+            authDomain: "cuentas-panda-mgb.firebaseapp.com",
+            projectId: "cuentas-panda-mgb",
+            storageBucket: "cuentas-panda-mgb.firebasestorage.app",
+            messagingSenderId: "399635180894",
+            appId: "1:399635180894:web:9be92a7e815a4b9a50b3cf"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
     <title>Gestor Financiero - Panda Edition</title>
     <link rel="icon" href="lapiz.png">
     <!-- Tu archivo de estilos -->
@@ -14,7 +28,7 @@
 </head>
 <body>
 
-        <!-- PANTALLA DE INICIO DE SESIÓN / REGISTRO -->
+    <!-- PANTALLA DE INICIO DE SESIÓN / REGISTRO -->
     <div id="pantallaLogin" class="contenedor-login">
         <div class="tarjeta-login">
             <h2>🐼 PandaZen Finanzas</h2>
