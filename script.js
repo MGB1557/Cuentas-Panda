@@ -1,11 +1,13 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
-    getAuth,
+    getAuth, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
     onAuthStateChanged,
     signOut 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// (Aquí debajo va tu configuración de firebase, por ejemplo: const firebaseConfig = {...})
 // Asegurar que auth está inicializado (necesitas tener tu app de firebase configurada antes)
 // const auth = getAuth(app); -> (Asegúrate de que 'auth' está declarado aquí arriba)
 
