@@ -1,14 +1,15 @@
-// ==========================================
-// 1. CONFIGURACIÓN DE FIREBASE (¡Pon tus claves aquí!)
-// ==========================================
+// Configuración e inicialización de Firebase
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID",
-  appId: "TU_APP_ID"
+    apiKey: "AIzaSyCqCMLjp7j2XPyZ4GoeWDJScpHEmgIvFBc",
+    authDomain: "cuentas-panda-mgb.firebaseapp.com",
+    projectId: "cuentas-panda-mgb",
+    storageBucket: "cuentas-panda-mgb.firebasestorage.app",
+    messagingSenderId: "399635180894",
+    appId: "1:399635180894:web:9be92a7e815a4b9a50b3cf"
 };
+firebase.initializeApp(firebaseConfig);
+
+// ... (aquí debajo ya sigue el resto de tu código de iniciarSesion, etc.)
 
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
