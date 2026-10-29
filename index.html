@@ -2,194 +2,347 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Gestor Financiero - Panda Edition</title>
-    <link rel="icon" href="lapiz.png">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaZen Finanzas</title>
+    <!-- Tailwind CSS para que el diseño quede bonito y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen text-slate-800">
 
-    <!-- PANTALLA DE INICIO DE SESIÓN / REGISTRO -->
-    <div id="pantallaLogin" class="contenedor-login">
-        <div class="tarjeta-login">
-            <h2>🐼 PandaZen Finanzas</h2>
-            <p>Inicia sesión o regístrate para ver tus datos</p>
-
-            <input type="email" id="loginEmail" placeholder="Correo electrónico" required />
-            <input type="password" id="loginPassword" placeholder="Contraseña" required />
-
-            <div class="botones-login">
-                <button id="btnEntrar" onclick="iniciarSesion()">Entrar</button>
-                <button id="btnRegistrar" onclick="registrarUsuario()">Registrarse</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PANTALLA PRINCIPAL DE LA APLICACIÓN (Empieza oculta) -->
-    <div id="pantallaApp" class="app-container" style="display: none;">
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div id="app" class="max-w-4xl mx-auto p-4 sm:p-6">
         
-        <!-- HEADER Y MASCOTA PANDA ROJO -->
-        <header class="main-header">
-            <div class="avatar-container">
-                <!-- Auténtico Panda Rojo SVG -->
-                <div class="panda-avatar">
-                    <svg viewBox="0 0 120 120" width="85" height="85">
-                        <circle cx="30" cy="30" r="18" fill="#D35400"/>
-                        <circle cx="30" cy="30" r="9" fill="#FAD7A0"/>
-                        <circle cx="90" cy="30" r="18" fill="#D35400"/>
-                        <circle cx="90" cy="30" r="9" fill="#FAD7A0"/>
-                        <circle cx="60" cy="65" r="38" fill="#E67E22"/>
-                        <path d="M 32 60 Q 48 50 52 75 Q 38 85 32 60 Z" fill="#FFFFFF"/>
-                        <path d="M 88 60 Q 72 50 68 75 Q 82 85 88 60 Z" fill="#FFFFFF"/>
-                        <ellipse cx="60" cy="78" rx="18" ry="14" fill="#FFFFFF"/>
-                        <circle cx="46" cy="62" r="6" fill="#2C3E50"/>
-                        <circle cx="74" cy="62" r="6" fill="#2C3E50"/>
-                        <circle cx="47" cy="60" r="2" fill="#FFFFFF"/>
-                        <circle cx="75" cy="60" r="2" fill="#FFFFFF"/>
-                        <ellipse cx="60" cy="72" rx="6" ry="4" fill="#2C3E50"/>
-                        <path d="M 54 80 Q 60 85 66 80" stroke="#2C3E50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <div class="panda-dialog">
-                    <h2>¡Hola! 👋</h2>
-                    <p id="mensajePanda">Tus finanzas van sobre ruedas este mes.</p>
-                </div>
+        <!-- CABECERA -->
+        <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🐼</span>
+                <h1 class="text-xl font-bold text-slate-900">PandaZen Finanzas</h1>
             </div>
-            
-            <div class="header-buttons">
-                <!-- Botón de Cerrar Sesión -->
-                <div class="btn-container-manual">
-                    <button id="btnCerrarSesion" class="btn-icon" onclick="cerrarSesion()" title="Cerrar Sesión">🚪</button>
-                    <span class="btn-label">Salir</span>
-                </div>
-                <!-- Botón del libro con la etiqueta "Manual" debajo -->
-                <div class="btn-container-manual">
-                    <button id="btnAbrirManual" class="btn-icon" title="Manual de Uso">📖</button>
-                    <span class="btn-label">Manual</span>
-                </div>
-                <button id="btnToggleDarkMode" class="btn-icon" title="Modo Oscuro">🌙</button>
-            </div>
+            <!-- Botón de Cerrar Sesión (inicialmente oculto si no está logueado) -->
+            <button id="btnLogout" class="hidden text-sm bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-medium transition">
+                Cerrar Sesión
+            </button>
         </header>
 
-        <!-- TARJETAS DE RESUMEN -->
-        <section class="summary-cards">
-            <div class="card card-balance">
-                <div class="card-icon">💰</div>
-                <div class="card-info">
-                    <span>Balance Total</span>
-                    <h3 id="totalBalance">0.00 €</h3>
+        <!-- SECCIÓN DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+        <section id="authSection" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 max-w-md mx-auto mt-10">
+            <h2 id="authTitle" class="text-lg font-semibold mb-4 text-center">Iniciar Sesión</h2>
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Correo Electrónico</label>
+                    <input type="email" id="authEmail" required class="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
-            </div>
-
-            <div class="card card-income">
-                <div class="card-icon">📈</div>
-                <div class="card-info">
-                    <span>Ingresos</span>
-                    <h3 id="totalIngresos">+0.00 €</h3>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Contraseña</label>
+                    <input type="password" id="authPassword" required class="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
-            </div>
-
-            <div class="card card-expense">
-                <div class="card-icon">📉</div>
-                <div class="card-info">
-                    <span>Gastos</span>
-                    <h3 id="totalGastos">-0.00 €</h3>
-                </div>
-            </div>
-        </section>
-
-        <!-- FORMULARIO DE NUEVO MOVIMIENTO -->
-        <section class="form-section">
-            <h3>➕ Añadir Movimiento</h3>
-            <form id="formMovimiento" class="modern-form">
-                <div class="form-group">
-                    <label>Concepto</label>
-                    <input type="text" id="concepto" placeholder="Ej. Compra semanal" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Cantidad (€)</label>
-                    <input type="number" step="0.01" id="monto" placeholder="0.00" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select id="categoria">
-                        <option value="comida">🍔 Comida / Supermercado</option>
-                        <option value="vivienda">🏠 Alquiler / Casa</option>
-                        <option value="servicios">⚡ Luz / Agua / Gas</option>
-                        <option value="transporte">🚗 Transporte / Gasolina</option>
-                        <option value="ocio">🎉 Ocio / Varios</option>
-                        <option value="nomina">💼 Nómina / Ingreso</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="tipo">
-                        <option value="gasto">Gasto</option>
-                        <option value="ingreso">Ingreso</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-primary">Guardar Movimiento</button>
-            </form>
-        </section>
-
-        <!-- HISTORIAL DE MOVIMIENTOS -->
-        <section class="history-section">
-            <h3>📋 Últimos Movimientos</h3>
-            <div id="listaMovimientos" class="movements-list">
-                <!-- Se cargará mediante JS -->
-            </div>
-            <!-- Botón para borrar todo con aviso -->
-            <div style="text-align: center; margin-top: 15px;">
-                <button id="btnBorrarTodo" class="btn-danger-soft" style="background: none; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
-                    🗑️ Borrar todo y empezar de cero
+                <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-xl transition">
+                    Entrar
                 </button>
-            </div>
+            </form>
+            <p class="text-center text-sm mt-4 text-slate-600">
+                <span id="authToggleText">¿No tienes cuenta?</span> 
+                <button type="button" id="authToggleBtn" class="text-emerald-600 font-semibold hover:underline ml-1">Regístrate</button>
+            </p>
         </section>
 
-    </div>
-
-    <!-- VENTANA MODAL CON EL MANUAL DE USO -->
-    <div id="modalManual" class="modal-backdrop hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📖 Manual del Gestor Financiero</h2>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button id="btnToggleDarkModeModal" class="btn-icon" title="Modo Oscuro" style="padding: 6px 10px; font-size: 1rem;">🌙</button>
-                    <button id="btnCerrarManual" class="btn-close">&times;</button>
+        <!-- SECCIÓN PRINCIPAL DE LA APP (OCULTA HASTA QUE INICIAS SESIÓN) -->
+        <main id="mainApp" class="hidden space-y-6">
+            
+            <!-- TARJETAS DE RESUMEN (BALANCE, INGRESOS, GASTOS) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-xs uppercase font-semibold text-slate-400">Balance Total</p>
+                    <p id="totalBalance" class="text-2xl font-bold text-slate-900 mt-1">0.00 €</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-xs uppercase font-semibold text-emerald-500">Ingresos</p>
+                    <p id="totalIncome" class="text-2xl font-bold text-emerald-600 mt-1">0.00 €</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-xs uppercase font-semibold text-rose-500">Gastos</p>
+                    <p id="totalExpenses" class="text-2xl font-bold text-rose-600 mt-1">0.00 €</p>
                 </div>
             </div>
-            <div class="modal-body">
-                <h3>🐼 1. Bienvenido al Panda Rojo</h3>
-                <p>El Panda Rojo supervisa tus finanzas. Dependiendo de tu balance total, te dará un diagnóstico rápido sobre la salud de tu bolsillo.</p>
 
-                <h3>➕ 2. Cómo añadir un movimiento</h3>
-                <ul>
-                    <li>Escribe el <strong>Concepto</strong> (por ejemplo: <i>Supermercado</i> o <i>Nómina</i>).</li>
-                    <li>Indica la <strong>Cantidad</strong> en euros.</li>
-                    <li>Selecciona la <strong>Categoría</strong> adecuada para asignarle su icono.</li>
-                    <li>Selecciona si se trata de un <strong>Gasto</strong> (resta) o un <strong>Ingreso</strong> (suma).</li>
-                    <li>Pulsa en <strong>Guardar Movimiento</strong>.</li>
-                </ul>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- FORMULARIO PARA AÑADIR MOVIMIENTOS -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 md:col-span-1 h-fit">
+                    <h2 class="text-md font-semibold mb-4 text-slate-900">Añadir Movimiento</h2>
+                    <form id="movementForm" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Tipo</label>
+                            <select id="movType" class="w-full px-3 py-2 border rounded-xl bg-white outline-none">
+                                <option value="gasto">Gasto</option>
+                                <option value="ingreso">Ingreso</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Concepto</label>
+                            <input type="text" id="movConcept" required placeholder="Ej. Supermercado, Luz..." class="w-full px-3 py-2 border rounded-xl outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Monto (€)</label>
+                            <input type="number" step="0.01" id="movAmount" required placeholder="0.00" class="w-full px-3 py-2 border rounded-xl outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Categoría</label>
+                            <select id="movCategory" class="w-full px-3 py-2 border rounded-xl bg-white outline-none">
+                                <option value="servicios">Servicios / Facturas</option>
+                                <option value="comida">Comida / Supermercado</option>
+                                <option value="ocio">Ocio / Varios</option>
+                                <option value="nomina">Nómina / Sueldo</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-xl transition">
+                            Guardar Movimiento
+                        </button>
+                    </form>
+                </div>
 
-                <h3>📊 3. Tarjetas de Resumen</h3>
-                <p>En la parte superior verás tres datos en tiempo real:</p>
-                <ul>
-                    <li><strong>Balance Total:</strong> La diferencia global entre lo que entra y lo que sale.</li>
-                    <li><strong>Ingresos:</strong> Suma total de dinero recibido.</li>
-                    <li><strong>Gastos:</strong> Suma total de dinero gastado.</li>
-                </ul>
+                <!-- LISTA DE MOVIMIENTOS + FILTROS -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 md:col-span-2 space-y-4">
+                    <h2 class="text-md font-semibold text-slate-900">Historial y Filtros</h2>
 
-                <h3>🌙 4. Modo Oscuro y Datos</h3>
-                <p>Usa el botón del sol/luna superior o el de aquí arriba para cambiar el tema de la aplicación. Tus datos se guardan de forma automática en tu navegador de forma 100% privada.</p>
+                    <!-- NUEVA ZONA DE FILTROS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <!-- Buscador por texto -->
+                        <input type="text" id="filterSearch" placeholder="Buscar concepto..." class="px-3 py-2 border rounded-xl text-sm outline-none">
+                        <!-- Filtro por Tipo -->
+                        <select id="filterType" class="px-3 py-2 border rounded-xl text-sm bg-white outline-none">
+                            <option value="todos">Todos los tipos</option>
+                            <option value="ingreso">Solo Ingresos</option>
+                            <option value="gasto">Solo Gastos</option>
+                        </select>
+                        <!-- Filtro por Categoría -->
+                        <select id="filterCategory" class="px-3 py-2 border rounded-xl text-sm bg-white outline-none">
+                            <option value="todas">Todas las categorías</option>
+                            <option value="servicios">Servicios</option>
+                            <option value="comida">Comida</option>
+                            <option value="ocio">Ocio</option>
+                            <option value="nomina">Nómina</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <!-- TABLA / LISTA DE MOVIMIENTOS -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 text-slate-400 uppercase text-xs">
+                                <tr>
+                                    <th class="p-3">Concepto</th>
+                                    <th class="p-3">Categoría</th>
+                                    <th class="p-3">Monto</th>
+                                    <th class="p-3 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movementsTableBody" class="divide-y divide-slate-100">
+                                <!-- Los movimientos se cargan aquí automáticamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Tu archivo JS -->
-    <script type="module" src="script.js"></script>
+    <!-- SCRIPTS DE FIREBASE Y LÓGICA DE LA APP -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+            signOut, onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, collection, addDoc, query, where, 
+            onSnapshot, deleteDoc, doc, serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // CONFIGURACIÓN DE TU PROYECTO FIREBASE
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "cuentas-panda-mgb.firebaseapp.com",
+            projectId: "cuentas-panda-mgb",
+            storageBucket: "cuentas-panda-mgb.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allMovements = []; // Guardamos todos los datos aquí para filtrar localmente con rapidez
+
+        // Referencias del DOM
+        const authSection = document.getElementById('authSection');
+        const mainApp = document.getElementById('mainApp');
+        const authForm = document.getElementById('authForm');
+        const authEmail = document.getElementById('authEmail');
+        const authPassword = document.getElementById('authPassword');
+        const authTitle = document.getElementById('authTitle');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const authToggleBtn = document.getElementById('authToggleBtn');
+        const authToggleText = document.getElementById('authToggleText');
+        const btnLogout = document.getElementById('btnLogout');
+        const movementForm = document.getElementById('movementForm');
+        const movementsTableBody = document.getElementById('movementsTableBody');
+
+        // Referencias de los Filtros
+        const filterSearch = document.getElementById('filterSearch');
+        const filterType = document.getElementById('filterType');
+        const filterCategory = document.getElementById('filterCategory');
+
+        let isRegistering = false;
+
+        // Cambiar entre Login y Registro
+        authToggleBtn.addEventListener('click', () => {
+            isRegistering = !isRegistering;
+            authTitle.textContent = isRegistering ? "Crear Cuenta Nueva" : "Iniciar Sesión";
+            authSubmitBtn.textContent = isRegistering ? "Registrarse" : "Entrar";
+            authToggleText.textContent = isRegistering ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?";
+            authToggleBtn.textContent = isRegistering ? "Inicia sesión" : "Regístrate";
+        });
+
+        // Gestionar Autenticación
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = authEmail.value;
+            const password = authPassword.value;
+            try {
+                if (isRegistering) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                alert("Error de autenticación: " + error.message);
+            }
+        });
+
+        btnLogout.addEventListener('click', () => signOut(auth));
+
+        // Observador de Estado de Sesión
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                authSection.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+                loadMovements(user.uid);
+            } else {
+                authSection.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+                movementsTableBody.innerHTML = '';
+                allMovements = [];
+            }
+        });
+
+        // Guardar Movimiento en Firestore
+        movementForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const nuevoMov = {
+                tipo: document.getElementById('movType').value,
+                concepto: document.getElementById('movConcept').value.trim(),
+                monto: parseFloat(document.getElementById('movAmount').value),
+                categoria: document.getElementById('movCategory').value,
+                uid: currentUser.uid,
+                fecha: serverTimestamp()
+            };
+
+            try {
+                await addDoc(collection(db, "movimientos"), nuevoMov);
+                movementForm.reset();
+            } catch (error) {
+                alert("Error al guardar: " + error.message);
+            }
+        });
+
+        // Cargar Movimientos en Tiempo Real con Firestore
+        function loadMovements(uid) {
+            const q = query(collection(db, "movimientos"), where("uid", "==", uid));
+            onSnapshot(q, (snapshot) => {
+                allMovements = [];
+                snapshot.forEach((docSnap) => {
+                    allMovements.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderFilteredMovements();
+            });
+        }
+
+        // Aplicar Filtros y Pintar la Tabla + Tarjetas
+        function renderFilteredMovements() {
+            const searchText = filterSearch.value.toLowerCase();
+            const typeValue = filterType.value;
+            const categoryValue = filterCategory.value;
+
+            // Filtrar los datos según lo que el usuario haya escrito o seleccionado
+            const filtered = allMovements.filter(mov => {
+                const matchesSearch = mov.concepto.toLowerCase().includes(searchText);
+                const matchesType = (typeValue === 'todos') || (mov.tipo === typeValue);
+                const matchesCategory = (categoryValue === 'todas') || (mov.categoria === categoryValue);
+                return matchesSearch && matchesType && matchesCategory;
+            });
+
+            // Actualizar tarjetas de resumen globales (con todos los datos del usuario, no solo los filtrados)
+            let totalB = 0, totalI = 0, totalG = 0;
+            allMovements.forEach(m => {
+                if (m.tipo === 'ingreso') {
+                    totalI += m.monto;
+                    totalB += m.monto;
+                } else {
+                    totalG += m.monto;
+                    totalB -= m.monto;
+                }
+            });
+
+            document.getElementById('totalBalance').textContent = totalB.toFixed(2) + ' €';
+            document.getElementById('totalIncome').textContent = totalI.toFixed(2) + ' €';
+            document.getElementById('totalExpenses').textContent = totalG.toFixed(2) + ' €';
+
+            // Pintar la tabla con los movimientos filtrados
+            movementsTableBody.innerHTML = '';
+            if (filtered.length === 0) {
+                movementsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron movimientos.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(mov => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-slate-800">${mov.concepto}</td>
+                    <td class="p-3 text-slate-500 capitalize">${mov.categoria}</td>
+                    <td class="p-3 font-semibold ${mov.tipo === 'ingreso' ? 'text-emerald-600' : 'text-rose-600'}">
+                        ${mov.tipo === 'ingreso' ? '+' : '-'}${mov.monto.toFixed(2)} €
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteMovement('${mov.id}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg transition">Borrar</button>
+                    </td>
+                `;
+                movementsTableBody.appendChild(tr);
+            });
+        }
+
+        // Borrar movimiento
+        window.deleteMovement = async function(id) {
+            if (confirm("¿Seguro que quieres borrar este movimiento?")) {
+                try {
+                    await deleteDoc(doc(db, "movimientos", id));
+                } catch (error) {
+                    alert("Error al borrar: " + error.message);
+                }
+            }
+        };
+
+        // Escuchar cambios en los filtros para actualizar la pantalla al momento
+        filterSearch.addEventListener('input', renderFilteredMovements);
+        filterType.addEventListener('change', renderFilteredMovements);
+        filterCategory.addEventListener('change', renderFilteredMovements);
+    </script>
 </body>
 </html>
