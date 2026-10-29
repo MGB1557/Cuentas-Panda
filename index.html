@@ -160,24 +160,16 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // CONFIGURACIÓN DE TU PROYECTO FIREBASE
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqCMljp7j2XPyZ4GoeWDJScpHEmgIvfBc",
+            authDomain: "cuentas-panda-mgb.firebaseapp.com",
+            projectId: "cuentas-panda-mgb",
+            storageBucket: "cuentas-panda-mgb.firebasestorage.app",
+            messagingSenderId: "399635180894",
+            appId: "1:399635180894:web:9be92a7e815a4b9a50b3cf"
+        };
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCqCMljp7j2XPyZ4GoeWDJScpHEmgIvfBc",
-  authDomain: "cuentas-panda-mgb.firebaseapp.com",
-  projectId: "cuentas-panda-mgb",
-  storageBucket: "cuentas-panda-mgb.firebasestorage.app",
-  messagingSenderId: "399635180894",
-  appId: "1:399635180894:web:9be92a7e815a4b9a50b3cf"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
+        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -263,95 +255,3 @@ const app = initializeApp(firebaseConfig);
                 uid: currentUser.uid,
                 fecha: serverTimestamp()
             };
-
-            try {
-                await addDoc(collection(db, "movimientos"), nuevoMov);
-                movementForm.reset();
-            } catch (error) {
-                alert("Error al guardar: " + error.message);
-            }
-        });
-
-        // Cargar Movimientos en Tiempo Real con Firestore
-        function loadMovements(uid) {
-            const q = query(collection(db, "movimientos"), where("uid", "==", uid));
-            onSnapshot(q, (snapshot) => {
-                allMovements = [];
-                snapshot.forEach((docSnap) => {
-                    allMovements.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderFilteredMovements();
-            });
-        }
-
-        // Aplicar Filtros y Pintar la Tabla + Tarjetas
-        function renderFilteredMovements() {
-            const searchText = filterSearch.value.toLowerCase();
-            const typeValue = filterType.value;
-            const categoryValue = filterCategory.value;
-
-            // Filtrar los datos según lo que el usuario haya escrito o seleccionado
-            const filtered = allMovements.filter(mov => {
-                const matchesSearch = mov.concepto.toLowerCase().includes(searchText);
-                const matchesType = (typeValue === 'todos') || (mov.tipo === typeValue);
-                const matchesCategory = (categoryValue === 'todas') || (mov.categoria === categoryValue);
-                return matchesSearch && matchesType && matchesCategory;
-            });
-
-            // Actualizar tarjetas de resumen globales (con todos los datos del usuario, no solo los filtrados)
-            let totalB = 0, totalI = 0, totalG = 0;
-            allMovements.forEach(m => {
-                if (m.tipo === 'ingreso') {
-                    totalI += m.monto;
-                    totalB += m.monto;
-                } else {
-                    totalG += m.monto;
-                    totalB -= m.monto;
-                }
-            });
-
-            document.getElementById('totalBalance').textContent = totalB.toFixed(2) + ' €';
-            document.getElementById('totalIncome').textContent = totalI.toFixed(2) + ' €';
-            document.getElementById('totalExpenses').textContent = totalG.toFixed(2) + ' €';
-
-            // Pintar la tabla con los movimientos filtrados
-            movementsTableBody.innerHTML = '';
-            if (filtered.length === 0) {
-                movementsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron movimientos.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(mov => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-3 font-medium text-slate-800">${mov.concepto}</td>
-                    <td class="p-3 text-slate-500 capitalize">${mov.categoria}</td>
-                    <td class="p-3 font-semibold ${mov.tipo === 'ingreso' ? 'text-emerald-600' : 'text-rose-600'}">
-                        ${mov.tipo === 'ingreso' ? '+' : '-'}${mov.monto.toFixed(2)} €
-                    </td>
-                    <td class="p-3 text-right">
-                        <button onclick="deleteMovement('${mov.id}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg transition">Borrar</button>
-                    </td>
-                `;
-                movementsTableBody.appendChild(tr);
-            });
-        }
-
-        // Borrar movimiento
-        window.deleteMovement = async function(id) {
-            if (confirm("¿Seguro que quieres borrar este movimiento?")) {
-                try {
-                    await deleteDoc(doc(db, "movimientos", id));
-                } catch (error) {
-                    alert("Error al borrar: " + error.message);
-                }
-            }
-        };
-
-        // Escuchar cambios en los filtros para actualizar la pantalla al momento
-        filterSearch.addEventListener('input', renderFilteredMovements);
-        filterType.addEventListener('change', renderFilteredMovements);
-        filterCategory.addEventListener('change', renderFilteredMovements);
-    </script>
-</body>
-</html>
