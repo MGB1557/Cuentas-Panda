@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PandaZen Finanzas</title>
-    <!-- Tailwind CSS para que el diseño quede bonito y moderno -->
+    <!-- Tailwind CSS para un diseño moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800">
@@ -18,13 +18,13 @@
                 <span class="text-3xl">🐼</span>
                 <h1 class="text-xl font-bold text-slate-900">PandaZen Finanzas</h1>
             </div>
-            <!-- Botón de Cerrar Sesión (inicialmente oculto si no está logueado) -->
+            <!-- Botón de Cerrar Sesión -->
             <button id="btnLogout" class="hidden text-sm bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-medium transition">
                 Cerrar Sesión
             </button>
         </header>
 
-        <!-- SECCIÓN DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+        <!-- SECCIÓN DE AUTENTICACIÓN -->
         <section id="authSection" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 max-w-md mx-auto mt-10">
             <h2 id="authTitle" class="text-lg font-semibold mb-4 text-center">Iniciar Sesión</h2>
             <form id="authForm" class="space-y-4">
@@ -46,10 +46,10 @@
             </p>
         </section>
 
-        <!-- SECCIÓN PRINCIPAL DE LA APP (OCULTA HASTA QUE INICIAS SESIÓN) -->
+        <!-- SECCIÓN PRINCIPAL DE LA APP -->
         <main id="mainApp" class="hidden space-y-6">
             
-            <!-- TARJETAS DE RESUMEN (BALANCE, INGRESOS, GASTOS) -->
+            <!-- TARJETAS DE RESUMEN -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <p class="text-xs uppercase font-semibold text-slate-400">Balance Total</p>
@@ -101,32 +101,9 @@
                     </form>
                 </div>
 
-                <!-- LISTA DE MOVIMIENTOS + FILTROS -->
+                <!-- LISTA DE MOVIMIENTOS -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 md:col-span-2 space-y-4">
-                    <h2 class="text-md font-semibold text-slate-900">Historial y Filtros</h2>
-
-                    <!-- NUEVA ZONA DE FILTROS -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <!-- Buscador por texto -->
-                        <input type="text" id="filterSearch" placeholder="Buscar concepto..." class="px-3 py-2 border rounded-xl text-sm outline-none">
-                        <!-- Filtro por Tipo -->
-                        <select id="filterType" class="px-3 py-2 border rounded-xl text-sm bg-white outline-none">
-                            <option value="todos">Todos los tipos</option>
-                            <option value="ingreso">Solo Ingresos</option>
-                            <option value="gasto">Solo Gastos</option>
-                        </select>
-                        <!-- Filtro por Categoría -->
-                        <select id="filterCategory" class="px-3 py-2 border rounded-xl text-sm bg-white outline-none">
-                            <option value="todas">Todas las categorías</option>
-                            <option value="servicios">Servicios</option>
-                            <option value="comida">Comida</option>
-                            <option value="ocio">Ocio</option>
-                            <option value="nomina">Nómina</option>
-                            <option value="otro">Otro</option>
-                        </select>
-                    </div>
-
-                    <!-- TABLA / LISTA DE MOVIMIENTOS -->
+                    <h2 class="text-md font-semibold text-slate-900">Historial de Movimientos</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-slate-50 text-slate-400 uppercase text-xs">
@@ -159,7 +136,7 @@
             onSnapshot, deleteDoc, doc, serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE TU PROYECTO FIREBASE
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCqCMljp7j2XPyZ4GoeWDJScpHEmgIvfBc",
             authDomain: "cuentas-panda-mgb.firebaseapp.com",
@@ -174,7 +151,6 @@
         const db = getFirestore(app);
 
         let currentUser = null;
-        let allMovements = [];
 
         // Referencias del DOM
         const authSection = document.getElementById('authSection');
@@ -189,10 +165,6 @@
         const btnLogout = document.getElementById('btnLogout');
         const movementForm = document.getElementById('movementForm');
         const movementsTableBody = document.getElementById('movementsTableBody');
-
-        const filterSearch = document.getElementById('filterSearch');
-        const filterType = document.getElementById('filterType');
-        const filterCategory = document.getElementById('filterCategory');
 
         let isRegistering = false;
 
@@ -233,7 +205,6 @@
                 mainApp.classList.add('hidden');
                 btnLogout.classList.add('hidden');
                 movementsTableBody.innerHTML = '';
-                allMovements = [];
             }
         });
 
@@ -261,60 +232,41 @@
         function loadMovements(uid) {
             const q = query(collection(db, "movimientos"), where("uid", "==", uid));
             onSnapshot(q, (snapshot) => {
-                allMovements = [];
-                snapshot.forEach((docSnap) => {
-                    allMovements.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderFilteredMovements();
-            });
-        }
+                let totalB = 0, totalI = 0, totalG = 0;
+                movementsTableBody.innerHTML = '';
 
-        function renderFilteredMovements() {
-            const searchText = filterSearch.value.toLowerCase();
-            const typeValue = filterType.value;
-            const categoryValue = filterCategory.value;
-
-            const filtered = allMovements.filter(mov => {
-                const matchesSearch = mov.concepto.toLowerCase().includes(searchText);
-                const matchesType = (typeValue === 'todos') || (mov.tipo === typeValue);
-                const matchesCategory = (categoryValue === 'todas') || (mov.categoria === categoryValue);
-                return matchesSearch && matchesType && matchesCategory;
-            });
-
-            let totalB = 0, totalI = 0, totalG = 0;
-            allMovements.forEach(m => {
-                if (m.tipo === 'ingreso') {
-                    totalI += m.monto;
-                    totalB += m.monto;
-                } else {
-                    totalG += m.monto;
-                    totalB -= m.monto;
+                if (snapshot.empty) {
+                    movementsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron movimientos.</td></tr>`;
                 }
-            });
 
-            document.getElementById('totalBalance').textContent = totalB.toFixed(2) + ' €';
-            document.getElementById('totalIncome').textContent = totalI.toFixed(2) + ' €';
-            document.getElementById('totalExpenses').textContent = totalG.toFixed(2) + ' €';
+                snapshot.forEach((docSnap) => {
+                    const mov = { id: docSnap.id, ...docSnap.data() };
+                    
+                    if (mov.tipo === 'ingreso') {
+                        totalI += mov.monto;
+                        totalB += mov.monto;
+                    } else {
+                        totalG += mov.monto;
+                        totalB -= mov.monto;
+                    }
 
-            movementsTableBody.innerHTML = '';
-            if (filtered.length === 0) {
-                movementsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron movimientos.</td></tr>`;
-                return;
-            }
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-3 font-medium text-slate-800">${mov.concepto}</td>
+                        <td class="p-3 text-slate-500 capitalize">${mov.categoria}</td>
+                        <td class="p-3 font-semibold ${mov.tipo === 'ingreso' ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${mov.tipo === 'ingreso' ? '+' : '-'}${mov.monto.toFixed(2)} €
+                        </td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteMovement('${mov.id}')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg transition">Borrar</button>
+                        </td>
+                    `;
+                    movementsTableBody.appendChild(tr);
+                });
 
-            filtered.forEach(mov => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-3 font-medium text-slate-800">${mov.concepto}</td>
-                    <td class="p-3 text-slate-500 capitalize">${mov.categoria}</td>
-                    <td class="p-3 font-semibold ${mov.tipo === 'ingreso' ? 'text-emerald-600' : 'text-rose-600'}">
-                        ${mov.tipo === 'ingreso' ? '+' : '-'}${mov.monto.toFixed(2)} €
-                    </td>
-                    <td class="p-3 text-right">
-                        <button onclick="deleteMovement('${mov.id}')" class="text-xs bg-rose-55 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg transition">Borrar</button>
-                    </td>
-                `;
-                movementsTableBody.appendChild(tr);
+                document.getElementById('totalBalance').textContent = totalB.toFixed(2) + ' €';
+                document.getElementById('totalIncome').textContent = totalI.toFixed(2) + ' €';
+                document.getElementById('totalExpenses').textContent = totalG.toFixed(2) + ' €';
             });
         }
 
@@ -327,10 +279,6 @@
                 }
             }
         };
-
-        filterSearch.addEventListener('input', renderFilteredMovements);
-        filterType.addEventListener('change', renderFilteredMovements);
-        filterCategory.addEventListener('change', renderFilteredMovements);
     </script>
 </body>
 </html>
