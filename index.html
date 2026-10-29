@@ -6,6 +6,7 @@
     <title>Gestor Financiero - Panda Edition</title>
     <link rel="icon" href="lapiz.png">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -25,13 +26,12 @@
         </div>
     </div>
 
-    <!-- PANTALLA PRINCIPAL DE LA APLICACIÓN (Empieza oculta) -->
+    <!-- PANTALLA PRINCIPAL DE LA APLICACIÓN -->
     <div id="pantallaApp" class="app-container" style="display: none;">
         
         <!-- HEADER Y MASCOTA PANDA ROJO -->
         <header class="main-header">
             <div class="avatar-container">
-                <!-- Auténtico Panda Rojo SVG -->
                 <div class="panda-avatar">
                     <svg viewBox="0 0 120 120" width="85" height="85">
                         <circle cx="30" cy="30" r="18" fill="#D35400"/>
@@ -57,12 +57,10 @@
             </div>
             
             <div class="header-buttons">
-                <!-- Botón de Cerrar Sesión -->
                 <div class="btn-container-manual">
                     <button id="btnCerrarSesion" class="btn-icon" onclick="cerrarSesion()" title="Cerrar Sesión">🚪</button>
                     <span class="btn-label">Salir</span>
                 </div>
-                <!-- Botón del libro con la etiqueta "Manual" debajo -->
                 <div class="btn-container-manual">
                     <button id="btnAbrirManual" class="btn-icon" title="Manual de Uso">📖</button>
                     <span class="btn-label">Manual</span>
@@ -71,7 +69,7 @@
             </div>
         </header>
 
-        <!-- TARJETAS DE RESUMEN -->
+        <!-- TARJETAS DE RESUMEN (Balance, Ingresos, Gastos) -->
         <section class="summary-cards">
             <div class="card card-balance">
                 <div class="card-icon">💰</div>
@@ -98,61 +96,141 @@
             </div>
         </section>
 
-        <!-- FORMULARIO DE NUEVO MOVIMIENTO -->
+        <!-- FORMULARIO DE NUEVO MOVIMIENTO CON LOS BOTONES DE NAVEGACIÓN ARRIBA -->
         <section class="form-section">
-            <h3>➕ Añadir Movimiento</h3>
-            <form id="formMovimiento" class="modern-form">
-                <div class="form-group">
-                    <label>Concepto</label>
-                    <input type="text" id="concepto" placeholder="Ej. Compra semanal" required>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0;">➕ Añadir Movimiento</h3>
+                
+                <!-- LOS BOTONES DE NAVEGACIÓN PUESTOS EXACTAMENTE EN LA ZONA ROJA -->
+                <div class="top-nav-buttons">
+                    <button class="nav-tab-btn active" onclick="cambiarPestana('tabInicio', this)">🏠 Inicio</button>
+                    <button class="nav-tab-btn" onclick="cambiarPestana('tabDesglose', this)">📊 Desglose</button>
+                    <button class="nav-tab-btn" onclick="cambiarPestana('tabHistorial', this)">📋 Historial</button>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Cantidad (€)</label>
-                    <input type="number" step="0.01" id="monto" placeholder="0.00" required>
-                </div>
+            <!-- CONTENIDO DE LA PESTAÑA INICIO (Formulario + Últimos Movimientos) -->
+            <div id="tabInicio" class="tab-content active">
+                <form id="formMovimiento" class="modern-form">
+                    <div class="form-group">
+                        <label>Concepto</label>
+                        <input type="text" id="concepto" placeholder="Ej. Compra semanal" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select id="categoria">
-                        <option value="comida">🍔 Comida / Supermercado</option>
-                        <option value="vivienda">🏠 Alquiler / Casa</option>
-                        <option value="servicios">⚡ Luz / Agua / Gas</option>
-                        <option value="transporte">🚗 Transporte / Gasolina</option>
-                        <option value="ocio">🎉 Ocio / Varios</option>
-                        <option value="nomina">💼 Nómina / Ingreso</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label>Cantidad (€)</label>
+                        <input type="number" step="0.01" id="monto" placeholder="0.00" required>
+                    </div>
 
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="tipo">
-                        <option value="gasto">Gasto</option>
-                        <option value="ingreso">Ingreso</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="categoria">
+                            <option value="comida">🍔 Comida / Supermercado</option>
+                            <option value="vivienda">🏠 Alquiler / Casa</option>
+                            <option value="servicios">⚡ Luz / Agua / Gas</option>
+                            <option value="transporte">🚗 Transporte / Gasolina</option>
+                            <option value="ocio">🎉 Ocio / Varios</option>
+                            <option value="nomina">💼 Nómina / Ingreso</option>
+                        </select>
+                    </div>
 
-                <button type="submit" class="btn-primary">Guardar Movimiento</button>
-            </form>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="tipo">
+                            <option value="gasto">Gasto</option>
+                            <option value="ingreso">Ingreso</option>
+                        </select>
+                    </div>
+
+                    <!-- El botón naranja grande original de guardar -->
+                    <button type="submit" class="btn-primary-large">Guardar Movimiento</button>
+                </form>
+            </div>
+
+          <!-- PESTAÑA 2: DESGLOSE DE GASTOS POR CATEGORÍA -->
+            <div id="tabDesglose" class="tab-content hidden">
+                <section class="desglose-section">
+                    <div class="desglose-header-container">
+                        <div>
+                            <h3>📊 Desglose de Gastos</h3>
+                            <p class="subtitle-text">Filtra por periodo o consulta tu acumulado histórico</p>
+                        </div>
+                        
+                        <!-- FILTROS DE MES Y AÑO -->
+                        <div class="desglose-filtros">
+                            <select id="filtroMesDesglose" class="select-filtro" onchange="renderizarDesglose()">
+                                <option value="todos">📅 Todo el Año</option>
+                                <option value="0">Enero</option>
+                                <option value="1">Febrero</option>
+                                <option value="2">Marzo</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Mayo</option>
+                                <option value="5">Junio</option>
+                                <option value="6">Julio</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Septiembre</option>
+                                <option value="9" selected>Octubre</option>
+                                <option value="10">Noviembre</option>
+                                <option value="11">Diciembre</option>
+                            </select>
+
+                            <select id="filtroAnioDesglose" class="select-filtro" onchange="renderizarDesglose()">
+                                <option value="2026" selected>2026</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
+                    </div>
+
+        <!-- RESUMEN DEL PERIODO SELECCIONADO -->
+        <div class="card-total-periodo">
+            <span>Gasto Total del Periodo Seleccionado</span>
+            <h2 id="montoTotalPeriodo">0.00 €</h2>
+        </div>
+
+        <!-- ZONA DE LA GRÁFICA VISUAL -->
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <h4 style="margin-bottom: 15px; font-size: 0.95rem; opacity: 0.8;">📈 Evolución Gráfica del Periodo</h4>
+            <div style="position: relative; height: 220px; width: 100%;">
+                <canvas id="graficoGastos"></canvas>
+            </div>
+        </div>
+
+        <!-- LISTA DE CATEGORÍAS (SE CARGA DINÁMICAMENTE) -->
+        <div id="listaDesglose" class="desglose-list">
+            <!-- Se insertan con JavaScript -->
+        </div>
+    </section>
+</div>
+
+            <!-- CONTENIDO DE LA PESTAÑA HISTORIAL -->
+            <div id="tabHistorial" class="tab-content hidden">
+                <section class="history-section">
+                    <h3>📋 Historial Completo de Movimientos</h3>
+                    <div id="listaMovimientosHistorial" class="movements-list">
+                        <!-- Se cargará mediante JS -->
+                    </div>
+                </section>
+            </div>
+            <!-- BOTÓN DE BORRADO GENERAL -->
+            <div class="contenedor-borrar-general">
+                <button onclick="borrarTodosLosDatos()" class="btn-borrar-general">
+                    🗑️ Borrar Todos los Datos
+                </button>
+            </div>
         </section>
 
-        <!-- HISTORIAL DE MOVIMIENTOS -->
+        <!-- SECCIÓN DE ÚLTIMOS MOVIMIENTOS -->
         <section class="history-section">
             <h3>📋 Últimos Movimientos</h3>
             <div id="listaMovimientos" class="movements-list">
                 <!-- Se cargará mediante JS -->
             </div>
-            <!-- Botón para borrar todo con aviso -->
-            <div style="text-align: center; margin-top: 15px;">
-                <button id="btnBorrarTodo" class="btn-danger-soft" style="background: none; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
-                    🗑️ Borrar todo y empezar de cero
-                </button>
-            </div>
         </section>
 
     </div>
 
-    <!-- VENTANA MODAL CON EL MANUAL DE USO -->
+    <!-- VENTANA MODAL MANUAL -->
     <div id="modalManual" class="modal-backdrop hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -164,32 +242,13 @@
             </div>
             <div class="modal-body">
                 <h3>🐼 1. Bienvenido al Panda Rojo</h3>
-                <p>El Panda Rojo supervisa tus finanzas. Dependiendo de tu balance total, te dará un diagnóstico rápido sobre la salud de tu bolsillo.</p>
-
+                <p>El Panda Rojo supervisa tus finanzas y te da diagnósticos según tu saldo.</p>
                 <h3>➕ 2. Cómo añadir un movimiento</h3>
-                <ul>
-                    <li>Escribe el <strong>Concepto</strong> (por ejemplo: <i>Supermercado</i> o <i>Nómina</i>).</li>
-                    <li>Indica la <strong>Cantidad</strong> en euros.</li>
-                    <li>Selecciona la <strong>Categoría</strong> adecuada para asignarle su icono.</li>
-                    <li>Selecciona si se trata de un <strong>Gasto</strong> (resta) o un <strong>Ingreso</strong> (suma).</li>
-                    <li>Pulsa en <strong>Guardar Movimiento</strong>.</li>
-                </ul>
-
-                <h3>📊 3. Tarjetas de Resumen</h3>
-                <p>En la parte superior verás tres datos en tiempo real:</p>
-                <ul>
-                    <li><strong>Balance Total:</strong> La diferencia global entre lo que entra y lo que sale.</li>
-                    <li><strong>Ingresos:</strong> Suma total de dinero recibido.</li>
-                    <li><strong>Gastos:</strong> Suma total de dinero gastado.</li>
-                </ul>
-
-                <h3>🌙 4. Modo Oscuro y Datos</h3>
-                <p>Usa el botón del sol/luna superior o el de aquí arriba para cambiar el tema de la aplicación. Tus datos se guardan de forma automática en tu navegador de forma 100% privada.</p>
+                <p>Rellena el concepto, la cantidad, categoría y tipo, y pulsa el botón <strong>Guardar Movimiento</strong>.</p>
             </div>
         </div>
     </div>
 
-    <!-- Tu archivo JS -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
