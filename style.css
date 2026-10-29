@@ -1,273 +1,316 @@
+/* --- VARIABLES Y BASES --- */
 :root {
-    --bg-main: #e2e8f0;     /* Gris mate suave para el fondo general */
-    --bg-card: #f8fafc;     /* Blanco roto mate para las tarjetas */
-    --text-color: #1e293b;  /* Texto oscuro suave */
-    --text-muted: #64748b;  /* Texto secundario grisáceo */
-    --primary: #d35400;     /* Color anaranjado del Panda Rojo */
-    --success: #16a34a;     /* Verde para ingresos */
-    --danger: #dc2626;      /* Rojo para gastos */
-    --border-radius: 16px;
-    --shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    --primary: #e67e22;
+    --primary-dark: #d35400;
+    --bg-light: #f4f6f9;
+    --text-light: #2c3e50;
+    --card-bg: #ffffff;
+    --danger: #e74c3c;
+    --success: #2ecc71;
 }
 
-/* MODO OSCURO */
 body.dark-mode {
-    --bg-main: #0f172a;
-    --bg-card: #1e293b;
-    --text-color: #f8fafc;
-    --text-muted: #94a3b8;
+    --bg-light: #121212;
+    --text-light: #ecf0f1;
+    --card-bg: #1e1e1e;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: var(--bg-main) !important;
-    color: var(--text-color);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 20px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    transition: background-color 0.3s, color 0.3s;
 }
 
+/* --- CONTENEDOR PRINCIPAL --- */
 .app-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+    padding: 15px;
 }
 
-/* HEADER FIJO CON EL PAISAJE TOTALMENTE CLARO Y CUIDADO PARA LA VISTA */
+/* --- PANTALLA LOGIN --- */
+.contenedor-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.tarjeta-login {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.tarjeta-login input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.botones-login {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.botones-login button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#btnEntrar {
+    background: var(--primary);
+    color: white;
+}
+
+#btnRegistrar {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* --- HEADER Y MASCOTA --- */
 .main-header {
-    /* Dejamos la foto prácticamente libre de capas pesadas para que se aprecie el paisaje en todo su esplendor */
-    background: linear-gradient(rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0.15)), 
-                url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') !important;
-    background-size: cover !important;
-    background-position: center !important;
-    padding: 20px 24px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    padding: 20px;
+    border-radius: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    
-    /* Cabecera fija al hacer scroll */
-    position: sticky;
-    top: 20px;
-    z-index: 100;
-    backdrop-filter: blur(2px);
-}
-
-/* Forzamos que las letras de la cabecera se vean súper nítidas contra el paisaje */
-.panda-dialog h2, .panda-dialog p {
-    color: #ffffff !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); /* Sombra suave para que resalte sin molestar */
-}
-
-/* Modo oscuro con el mismo paisaje brillante y relajante */
-body.dark-mode .main-header {
-    background: linear-gradient(rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.3)), 
-                url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') !important;
-    background-size: cover !important;
-    background-position: center !important;
+    margin-bottom: 20px;
 }
 
 .avatar-container {
     display: flex;
     align-items: center;
-    gap: 16px;
-}
-
-.panda-avatar {
-    background: #fed7aa;
-    border-radius: 50%;
-    padding: 6px;
-    display: flex;
-    box-shadow: 0 4px 12px rgba(211, 84, 0, 0.2);
+    gap: 15px;
 }
 
 .panda-dialog h2 {
-    margin: 0;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
 }
 
 .panda-dialog p {
-    margin: 4px 0 0 0;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    opacity: 0.9;
 }
 
-/* BOTONES DE LA CABECERA */
 .header-buttons {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.btn-icon {
-    background: var(--bg-card);
-    border: 1px solid #cbd5e1;
-    font-size: 1.2rem;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: transform 0.2s ease;
-}
-
-.btn-icon:hover {
-    transform: scale(1.05);
+    gap: 10px;
 }
 
 .btn-container-manual {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+}
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 600;
+    font-size: 0.65rem;
+    margin-top: 2px;
 }
 
-/* TARJETAS DE RESUMEN */
+/* --- TARJETAS DE RESUMEN --- */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
 .card {
-    background: var(--bg-card);
-    padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    border: 1px solid #cbd5e1;
+    gap: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .card-icon {
     font-size: 2rem;
-    background: var(--bg-main);
-    padding: 12px;
-    border-radius: 12px;
 }
 
 .card-info span {
-    font-size: 0.85rem;
-    color: var(--text-muted);
+    font-size: 0.8rem;
+    color: #7f8c8d;
 }
 
 .card-info h3 {
-    margin: 4px 0 0 0;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+    margin-top: 2px;
 }
 
-.card-balance h3 { color: var(--primary); }
-.card-income h3 { color: var(--success); }
-.card-expense h3 { color: var(--danger); }
+/* --- BOTONES DE PESTAÑA SUPERIORES (ZONA ROJA) --- */
+.top-nav-buttons {
+    display: flex;
+    gap: 8px;
+    background: #eef2f5;
+    padding: 4px;
+    border-radius: 10px;
+}
 
-/* FORMULARIO Y SECCIONES */
-.form-section, .history-section {
-    background: var(--bg-card);
-    padding: 24px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    border: 1px solid #cbd5e1;
+body.dark-mode .top-nav-buttons {
+    background: #2a2a2a;
+}
+
+.nav-tab-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.dark-mode .nav-tab-btn {
+    color: #aaa;
+}
+
+.nav-tab-btn.active {
+    background: var(--card-bg);
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* --- FORMULARIO DE MOVIMIENTO --- */
+.form-section {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .modern-form {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 10px;
 }
 
-.form-group {
+.modern-form .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
 }
 
-.form-group label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
+.modern-form label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #7f8c8d;
 }
 
-.form-group input, .form-group select {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #cbd5e1;
-    background: var(--bg-main);
-    color: var(--text-color);
-    outline: none;
+.modern-form input,
+.modern-form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    font-size: 0.9rem;
 }
 
-.btn-primary {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+.btn-primary-large {
+    grid-column: span 4;
+    background: var(--primary);
     color: white;
     border: none;
     padding: 12px;
-    border-radius: 10px;
+    border-radius: 8px;
     font-weight: bold;
+    font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    margin-top: 10px;
+    transition: background 0.2s;
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
+.btn-primary-large:hover {
+    background: var(--primary-dark);
 }
 
-/* LISTA DE MOVIMIENTOS */
+/* --- CONTROL DE VISIBILIDAD DE PESTAÑAS --- */
+.tab-content.hidden {
+    display: none !important;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- LISTAS E HISTORIAL --- */
+.history-section, .desglose-section {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
 .movements-list {
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
+    gap: 10px;
 }
 
-.item-movimiento {
+.movimiento-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 18px;
-    background: var(--bg-main);
-    border-radius: 12px;
-    border-left: 5px solid var(--primary);
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
 }
 
-.item-movimiento.ingreso { border-left-color: var(--success); }
-.item-movimiento.gasto { border-left-color: var(--danger); }
-
-.item-detalles {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.item-monto {
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-/* VENTANA MODAL (MANUAL) */
+/* --- VENTANA MODAL --- */
 .modal-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    padding: 20px;
-    box-sizing: border-box;
+    z-index: 200;
 }
 
 .modal-backdrop.hidden {
@@ -275,107 +318,177 @@ body.dark-mode .main-header {
 }
 
 .modal-content {
-    background: var(--bg-card);
-    color: var(--text-color);
-    padding: 24px;
-    border-radius: var(--border-radius);
-    max-width: 600px;
-    width: 100%;
-    max-height: 85vh;
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 20px 30px rgba(0,0,0,0.3);
-    border: 1px solid #cbd5e1;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #cbd5e1;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.2rem;
+    margin-bottom: 15px;
 }
 
 .btn-close {
-    background: transparent;
+    background: none;
     border: none;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    color: var(--text-muted);
+    color: var(--text-light);
 }
 
-.modal-body h3 {
-    margin-top: 16px;
-    margin-bottom: 8px;
+/* --- RESPONSIVE / MÓVILES --- */
+@media (max-width: 600px) {
+    .modern-form {
+        grid-template-columns: 1fr;
+    }
+    .btn-primary-large {
+        grid-column: span 1;
+    }
+}
+
+/* --- ESTILOS BONITOS PARA EL DESGLOSE --- */
+.desglose-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.subtitle-text {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-top: 2px;
+}
+
+.desglose-filtros {
+    display: flex;
+    gap: 8px;
+}
+
+.select-filtro {
+    padding: 8px 12px;
+    border: 1px solid #dcdfe6;
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.card-total-periodo {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    border-left: 5px solid var(--primary);
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+body.dark-mode .card-total-periodo {
+    background: linear-gradient(135deg, #2d2218, #3a2b1c);
+}
+
+.card-total-periodo span {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-total-periodo h2 {
+    font-size: 1.8rem;
+    color: #d35400;
+    margin-top: 4px;
+}
+
+/* Tarjeta individual por categoría */
+.categoria-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease;
+}
+
+.categoria-card:hover {
+    transform: translateY(-2px);
+}
+
+.categoria-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.categoria-nombre {
+    font-weight: bold;
     font-size: 1rem;
-    color: var(--primary);
 }
 
-.modal-body p, .modal-body ul {
-    margin: 0 0 12px 0;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--text-muted);
+.monto-periodo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--danger);
 }
 
-.modal-body ul {
-    padding-left: 20px;
+.monto-historico-label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed #eee;
 }
 
-/* Estilos para el Login */
-.contenedor-login {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  padding: 20px;
+body.dark-mode .monto-historico-label {
+    border-top-color: #333;
 }
 
-.tarjeta-login {
-  background: var(--bg-card, #ffffff);
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  max-width: 380px;
-  width: 100%;
+/* Asegurar que la gráfica se muestre siempre con buen tamaño */
+#graficoGastos {
+    width: 100% !important;
+    height: 220px !important;
 }
 
-.tarjeta-login input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
+/* Contenedor del botón de borrado general */
+.contenedor-borrar-general {
+    margin-top: 30px;
+    text-align: center;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 20px;
 }
 
-.botones-login {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
+/* Estilo del botón de borrado general */
+.btn-borrar-general {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
 }
 
-.botones-login button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#btnEntrar {
-  background-color: #2e7d32;
-  color: white;
-}
-
-#btnRegistrar {
-  background-color: #455a64;
-  color: white;
+.btn-borrar-general:hover {
+    background-color: #c0392b;
 }
