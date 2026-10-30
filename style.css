@@ -428,9 +428,56 @@ body.dark-mode h3 {
     color: var(--text-color, #f8fafc);
 }
 
-/* --- SOLUCIÓN DEFINITIVA PARA LA PESTAÑA GASTOS FIJOS EN MÓVIL --- */
+/* --- ESTABILIDAD Y ADAPTACIÓN MÓVIL (LIMPIO Y ÚNICO) --- */
 @media (max-width: 768px) {
-    /* Forzamos que la pestaña de gastos fijos se muestre en bloque y se centre */
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .app-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    .summary-cards {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .modern-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .modern-form .form-group,
+    .modern-form input,
+    .modern-form select,
+    .modern-form button {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .btn-primary-large {
+        width: 100% !important;
+        grid-column: span 1 !important;
+    }
+
+    /* Pestaña Gastos Fijos en móvil */
     #tabGastosFijos, 
     #tabGastosFijos.tab-content.active {
         display: block !important;
@@ -439,21 +486,21 @@ body.dark-mode h3 {
         padding: 5px !important;
     }
 
-    /* Anulamos el flex-wrap horizontal y ponemos los elementos en columna vertical */
     #formGastoFijo {
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
         flex-wrap: nowrap !important;
         gap: 12px !important;
+        box-sizing: border-box !important;
     }
 
-    /* Todos los inputs, selects y botones ocuparán el 100% del ancho del móvil */
     #formGastoFijo input,
     #formGastoFijo select,
     #formGastoFijo button {
         width: 100% !important;
         flex: none !important;
         box-sizing: border-box !important;
+        margin: 0 !important;
     }
 }
