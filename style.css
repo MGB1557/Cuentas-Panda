@@ -675,3 +675,40 @@ body.dark-mode select option:hover {
     color: #ffffff !important;
 }
 
+/* --- CORRECCIÓN DEFINITIVA DE INICIO EN MÓVIL --- */
+@media (max-width: 768px) {
+    /* 1. Las tarjetas de resumen (Balance, Ingresos, Gastos) en columna vertical */
+    .summary-cards {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 2. El formulario de "Añadir Movimiento" en una sola columna vertical */
+    .modern-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .modern-form .form-group,
+    .modern-form input,
+    .modern-form select,
+    .modern-form button {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Botón grande de guardar adaptado al ancho completo */
+    .btn-primary-large {
+        width: 100% !important;
+        grid-column: span 1 !important;
+    }
+}
