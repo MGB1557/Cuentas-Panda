@@ -96,21 +96,22 @@
             </div>
         </section>
 
-        <!-- FORMULARIO DE NUEVO MOVIMIENTO CON LOS BOTONES DE NAVEGACIÓN ARRIBA -->
+        <!-- MENÚ DE NAVEGACIÓN ENTRE PESTAÑAS -->
         <section class="form-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="margin: 0;">➕ Añadir Movimiento</h3>
+                <h3 style="margin: 0;">Navegación</h3>
                 
-                <!-- LOS BOTONES DE NAVEGACIÓN PUESTOS EXACTAMENTE EN LA ZONA ROJA -->
                 <div class="top-nav-buttons">
                     <button class="nav-tab-btn active" onclick="cambiarPestana('tabInicio', this)">🏠 Inicio</button>
                     <button class="nav-tab-btn" onclick="cambiarPestana('tabDesglose', this)">📊 Desglose</button>
                     <button class="nav-tab-btn" onclick="cambiarPestana('tabHistorial', this)">📋 Historial</button>
+                    <button class="nav-tab-btn" onclick="cambiarPestana('tabGastosFijos', this)">📌 Gastos Fijos</button>
                 </div>
             </div>
 
-            <!-- CONTENIDO DE LA PESTAÑA INICIO (Formulario + Últimos Movimientos) -->
+            <!-- CONTENIDO DE LA PESTAÑA 1: INICIO -->
             <div id="tabInicio" class="tab-content active">
+                <h3 style="margin-bottom: 15px;">➕ Añadir Movimiento</h3>
                 <form id="formMovimiento" class="modern-form">
                     <div class="form-group">
                         <label>Concepto</label>
@@ -142,12 +143,18 @@
                         </select>
                     </div>
 
-                    <!-- El botón naranja grande original de guardar -->
                     <button type="submit" class="btn-primary-large">Guardar Movimiento</button>
                 </form>
+
+                <section class="history-section" style="margin-top: 25px;">
+                    <h3>📋 Últimos Movimientos</h3>
+                    <div id="listaMovimientos" class="movements-list">
+                        <!-- Se cargará mediante JS -->
+                    </div>
+                </section>
             </div>
 
-          <!-- PESTAÑA 2: DESGLOSE DE GASTOS POR CATEGORÍA -->
+            <!-- CONTENIDO DE LA PESTAÑA 2: DESGLOSE -->
             <div id="tabDesglose" class="tab-content hidden">
                 <section class="desglose-section">
                     <div class="desglose-header-container">
@@ -156,9 +163,8 @@
                             <p class="subtitle-text">Filtra por periodo o consulta tu acumulado histórico</p>
                         </div>
                         
-                        <!-- FILTROS DE MES Y AÑO -->
                         <div class="desglose-filtros">
-                            <select id="filtroMesDesglose" class="select-filtro" onchange="renderizarDesglose()">
+                            <select id="filtroMesDesglose" class="select-filtro">
                                 <option value="todos">📅 Todo el Año</option>
                                 <option value="0">Enero</option>
                                 <option value="1">Febrero</option>
@@ -174,7 +180,7 @@
                                 <option value="11">Diciembre</option>
                             </select>
 
-                            <select id="filtroAnioDesglose" class="select-filtro" onchange="renderizarDesglose()">
+                            <select id="filtroAnioDesglose" class="select-filtro">
                                 <option value="2026" selected>2026</option>
                                 <option value="2025">2025</option>
                                 <option value="2024">2024</option>
@@ -182,72 +188,100 @@
                         </div>
                     </div>
 
-        <!-- RESUMEN DEL PERIODO SELECCIONADO -->
-        <div class="card-total-periodo">
-            <span>Gasto Total del Periodo Seleccionado</span>
-            <h2 id="montoTotalPeriodo">0.00 €</h2>
-        </div>
+                    <div class="card-total-periodo">
+                        <span>Gasto Total del Periodo Seleccionado</span>
+                        <h2 id="montoTotalPeriodo">0.00 €</h2>
+                    </div>
 
-        <!-- ZONA DE LA GRÁFICA VISUAL -->
-        <div style="background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-            <h4 style="margin-bottom: 15px; font-size: 0.95rem; opacity: 0.8;">📈 Evolución Gráfica del Periodo</h4>
-            <div style="position: relative; height: 220px; width: 100%;">
-                <canvas id="graficoGastos"></canvas>
+                    <div style="background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                        <h4 style="margin-bottom: 15px; font-size: 0.95rem; opacity: 0.8;">📈 Evolución Gráfica del Periodo</h4>
+                        <div style="position: relative; height: 220px; width: 100%;">
+                            <canvas id="graficoGastos"></canvas>
+                        </div>
+                    </div>
+
+                    <div id="listaDesglose" class="desglose-list">
+                        <!-- Se insertan con JavaScript -->
+                    </div>
+                </section>
             </div>
-        </div>
 
-        <!-- LISTA DE CATEGORÍAS (SE CARGA DINÁMICAMENTE) -->
-        <div id="listaDesglose" class="desglose-list">
-            <!-- Se insertan con JavaScript -->
-        </div>
-    </section>
-</div>
-
-            <!-- CONTENIDO DE LA PESTAÑA HISTORIAL -->
+            <!-- CONTENIDO DE LA PESTAÑA 3: HISTORIAL -->
             <div id="tabHistorial" class="tab-content hidden">
                 <section class="history-section">
                     <h3>📋 Historial Completo de Movimientos</h3>
+                    <!-- FILTROS DEL HISTORIAL -->
+                    <div class="filtros-historial" style="display: flex; gap: 8px; margin-bottom: 15px; justify-content: center;">
+                        <button type="button" class="btn-filtro active" data-filtro="todos">Todos</button>
+                        <button type="button" class="btn-filtro" data-filtro="ingreso">Solo Ingresos (+)</button>
+                        <button type="button" class="btn-filtro" data-filtro="gasto">Solo Gastos (-)</button>
+                    </div>
+
+                    <!-- Lista del historial donde se pintan los movimientos -->
+                    <div id="listaMovimientosHistorial"></div>
                     <div id="listaMovimientosHistorial" class="movements-list">
                         <!-- Se cargará mediante JS -->
                     </div>
                 </section>
             </div>
-            <!-- BOTÓN DE BORRADO GENERAL -->
-            <div class="contenedor-borrar-general">
-                <button onclick="borrarTodosLosDatos()" class="btn-borrar-general">
-                    🗑️ Borrar Todos los Datos
-                </button>
+
+            <!-- CONTENIDO DE LA PESTAÑA 4: GASTOS FIJOS -->
+            <div id="tabGastosFijos" class="tab-content hidden">
+                <section class="card" style="box-shadow: none; padding: 0;">
+                    <h3>📌 Mis Gastos Fijos (Plantillas)</h3>
+                    <p>Añade o elimina los recibos que pagas todos los meses.</p>
+
+                    <form id="formGastoFijo" onsubmit="guardarGastoFijo(event)" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <input type="text" id="fijoConcepto" placeholder="Concepto (ej: Hipoteca, Luz)" required style="flex: 2; padding: 8px;">
+                        <input type="number" step="0.01" id="fijoMonto" placeholder="Monto (€)" required style="flex: 1; padding: 8px;">
+                        <select id="fijoCategoria" required style="flex: 1; padding: 8px;">
+                            <option value="" disabled selected>Selecciona categoría</option>
+                            <option value="comida">🍔 Comida / Supermercado</option>
+                            <option value="vivienda">🏠 Alquiler / Casa</option>
+                            <option value="servicios">⚡ Luz / Agua / Gas</option>
+                            <option value="transporte">🚗 Transporte / Gasolina</option>
+                            <option value="ocio">🎉 Ocio / Varios</option>
+                            <option value="nomina">💼 Nómina / Ingreso</option>
+                        </select>
+                        <button type="submit" class="btn-primario" style="padding: 8px 15px;">➕ Guardar Plantilla</button>
+                    </form>
+
+                    <div id="listaGastosFijos" class="movements-list">
+                        <!-- Se cargará dinámicamente -->
+                    </div>
+                </section>
             </div>
         </section>
-
-        <!-- SECCIÓN DE ÚLTIMOS MOVIMIENTOS -->
-        <section class="history-section">
-            <h3>📋 Últimos Movimientos</h3>
-            <div id="listaMovimientos" class="movements-list">
-                <!-- Se cargará mediante JS -->
-            </div>
-        </section>
-
     </div>
 
     <!-- VENTANA MODAL MANUAL -->
-    <div id="modalManual" class="modal-backdrop hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📖 Manual del Gestor Financiero</h2>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button id="btnToggleDarkModeModal" class="btn-icon" title="Modo Oscuro" style="padding: 6px 10px; font-size: 1rem;">🌙</button>
-                    <button id="btnCerrarManual" class="btn-close">&times;</button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <h3>🐼 1. Bienvenido al Panda Rojo</h3>
-                <p>El Panda Rojo supervisa tus finanzas y te da diagnósticos según tu saldo.</p>
-                <h3>➕ 2. Cómo añadir un movimiento</h3>
-                <p>Rellena el concepto, la cantidad, categoría y tipo, y pulsa el botón <strong>Guardar Movimiento</strong>.</p>
+<div id="modalManual" class="modal-backdrop hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>📖 Manual del Gestor Financiero</h2>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="btnToggleDarkModeModal" class="btn-icon" title="Modo Oscuro" style="padding: 6px 10px; font-size: 1rem;">🌙</button>
+                <button id="btnCerrarManual" class="btn-close">&times;</button>
             </div>
         </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+            <h3>🐼 1. Bienvenido a PandaZen Finanzas</h3>
+            <p>Tu panda rojo de confianza supervisa tus finanzas y te ayuda a mantener el balance bajo control este mes.</p>
+            
+            <h3>➕ 2. Añadir Movimientos (Inicio)</h3>
+            <p>Rellena el concepto, la cantidad en €, selecciona la categoría adecuada (comida, vivienda, transporte, etc.) y elige si es gasto o ingreso. Pulsa <strong>Guardar Movimiento</strong> para registrarlo.</p>
+            
+            <h3>📊 3. Desglose y Gráficas</h3>
+            <p>En la pestaña <strong>Desglose</strong> verás una gráfica de barras con colores independientes por categoría, además de filtros para consultar el acumulado por meses o años.</p>
+            
+            <h3>📋 4. Historial</h3>
+            <p>En <strong>Historial</strong> puedes consultar todos tus movimientos ordenados con fechas claras y legibles. Si necesitas borrar alguno, pulsa el botón de la cruz roja (❌).</p>
+
+            <h3>📌 5. Gastos Fijos</h3>
+            <p>Configura aquí tus recibos recurrentes (como la hipoteca o los suministros). La aplicación los gestionará de forma automática como plantillas.</p>
+        </div>
     </div>
+</div>
 
     <script type="module" src="script.js"></script>
 </body>
