@@ -1,23 +1,23 @@
+// ==========================================
+// CONFIGURACIÓN DE FIREBASE Y VARIABLES GLOBALES
+// ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
     getAuth, 
     signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    onAuthStateChanged,
+    createUserWithEmailAndPassword, 
+    onAuthStateChanged, 
     signOut 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, 
     collection, 
     addDoc, 
-    query, 
-    where, 
     onSnapshot, 
     deleteDoc, 
     doc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Configuración de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyCqCMljp7j2XPyZ4GoeWDJScpHEmgIvfBc",
     authDomain: "cuentas-panda-mgb.firebaseapp.com",
@@ -27,439 +27,549 @@ const firebaseConfig = {
     appId: "1:146815332219:web:..." 
 };
 
-// Inicializar Firebase y Firestore
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let usuarioActual = null;
-let movimientosGlobales = []; // Array global para guardar los datos y usarlos en los filtros
+let plantillasGastosFijos = [];
+let miGraficoGastos = null;
+let filtroHistorialActivo = "todos"; // 'todos', 'ingreso' o 'gasto'
+let todosLosMovimientosCache = [];   // Caché global para los filtros del desglose
 
-// Mapa de nombres e iconos de categorías
-const nombresCategorias = {
-    comida: "🍔 Comida / Supermercado",
-    vivienda: "🏠 Alquiler / Casa",
-    servicios: "⚡ Luz / Agua / Gas",
-    transporte: "🚗 Transporte / Gasolina",
-    ocio: "🎉 Ocio / Varios",
-    nomina: "💼 Nómina / Ingreso"
-};
-
-// --- CAMBIO DE PESTAÑAS (NAVEGACIÓN SUPERIOR) ---
-window.cambiarPestana = function(idPestana, boton) {
-    // Ocultar todas las pestañas
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.add('hidden');
-        tab.classList.remove('active');
-    });
-
-    // Mostrar la pestaña elegida
-    const pestañaActiva = document.getElementById(idPestana);
-    if (pestañaActiva) {
-        pestañaActiva.classList.remove('hidden');
-        pestañaActiva.classList.add('active');
-    }
-
-    // Quitar estilo activo de los botones del menú
-    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Activar el botón pulsado
-    if (boton) {
-        boton.classList.add('active');
-    }
-
-    // Si cambian a la pestaña de desglose, renderizamos con los filtros actuales
-    if (idPestana === 'tabDesglose') {
-        window.renderizarDesglose();
-    }
-    
-};
-
-// --- 1. CONTROL AUTOMÁTICO DE VISIBILIDAD DE PANTALLAS ---
-onAuthStateChanged(auth, (user) => {
-    const loginSection = document.getElementById('pantallaLogin');
-    const appSection = document.getElementById('pantallaApp');
-
-    if (user) {
-        usuarioActual = user;
-        if (loginSection) loginSection.style.display = 'none';
-        if (appSection) appSection.style.display = 'block';
-        console.log("Usuario dentro de la sesión:", user.email);
-        
-        // Cargar los movimientos de este usuario en tiempo real
-        cargarMovimientos(user.uid);
-    } else {
-        usuarioActual = null;
-        if (loginSection) loginSection.style.display = 'block';
-        if (appSection) appSection.style.display = 'none';
-        console.log("Sesión no iniciada");
-    }
-});
-
-// --- 2. FUNCIONES DE AUTENTICACIÓN EXuestas a window ---
+// ==========================================
+// 1. AUTENTICACIÓN
+// ==========================================
 window.iniciarSesion = function() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-        alert("Por favor, introduce tu correo y contraseña.");
-        return;
-    }
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
 
     signInWithEmailAndPassword(auth, email, password)
         .catch((error) => {
-            console.error("Error al iniciar sesión:", error.message);
             alert("Error al iniciar sesión: " + error.message);
         });
 };
 
 window.registrarUsuario = function() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-        alert("Por favor, introduce un correo y contraseña para registrarte.");
-        return;
-    }
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
 
     createUserWithEmailAndPassword(auth, email, password)
         .then(() => {
-            alert("¡Cuenta creada con éxito!");
+            alert("¡Usuario registrado con éxito!");
         })
         .catch((error) => {
-            console.error("Error al registrar usuario:", error.message);
-            alert("Error al registrar: " + error.message);
+            alert("Error al registrarse: " + error.message);
         });
 };
 
 window.cerrarSesion = function() {
-    signOut(auth).then(() => {
-        alert("Sesión cerrada correctamente");
-    }).catch((error) => {
-        console.error("Error al cerrar sesión:", error);
+    signOut(auth).catch((error) => {
+        console.error("Error al cerrar sesión", error);
     });
 };
 
-// --- 3. GESTIÓN DE MOVIMIENTOS Y CARGA DESDE FIRESTORE ---
-function cargarMovimientos(uid) {
-    const q = query(collection(db, "movimientos"), where("uid", "==", uid));
-    
-    onSnapshot(q, (snapshot) => {
-        let totalIngresos = 0;
-        let totalGastos = 0;
-        
-        movimientosGlobales = []; // Limpiamos y rellenamos el array global
+onAuthStateChanged(auth, (user) => {
+    const pantallaLogin = document.getElementById("pantallaLogin");
+    const pantallaApp = document.getElementById("pantallaApp");
 
-        const listaMovimientosHTML = document.getElementById('listaMovimientos');
-        const listaMovimientosHistorialHTML = document.getElementById('listaMovimientosHistorial');
-
-        if (listaMovimientosHTML) listaMovimientosHTML.innerHTML = '';
-        if (listaMovimientosHistorialHTML) listaMovimientosHistorialHTML.innerHTML = '';
-
-        snapshot.forEach((docSnap) => {
-            const mov = docSnap.data();
-            const id = docSnap.id;
-            const montoNum = parseFloat(mov.monto) || 0;
-
-            // Guardamos con su ID en el array global
-            movimientosGlobales.push({ id, ...mov });
-
-            if (mov.tipo === 'ingreso') {
-                totalIngresos += montoNum;
-            } else {
-                totalGastos += montoNum;
-            }
-
-            // Pintar en el Historial / Últimos movimientos
-            const nombreCat = nombresCategorias[mov.categoria] || mov.categoria || 'General';
-            const itemHtml = `
-                <div class="movimiento-item ${mov.tipo}" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.02); margin-bottom: 8px;">
-                    <span><strong>${mov.concepto}</strong> <br><small style="opacity:0.7">${nombreCat}</small></span>
-                    <span style="color: ${mov.tipo === 'ingreso' ? 'var(--success)' : 'var(--danger)'}; font-weight: bold;">
-                        ${mov.tipo === 'ingreso' ? '+' : '-'}${montoNum.toFixed(2)} €
-                    </span>
-                    <button onclick="borrarMovimiento('${id}')" style="background:none; border:none; cursor:pointer;" title="Borrar">❌</button>
-                </div>
-            `;
-
-            if (listaMovimientosHTML) listaMovimientosHTML.appendChild(createNodeFromHtml(itemHtml));
-            if (listaMovimientosHistorialHTML) listaMovimientosHistorialHTML.appendChild(createNodeFromHtml(itemHtml));
-        });
-
-        // Actualizar tarjetas de resumen principal
-        const balanceTotal = totalIngresos - totalGastos;
-        const elIngresos = document.getElementById('totalIngresos');
-        const elGastos = document.getElementById('totalGastos');
-        const elBalance = document.getElementById('totalBalance');
-
-        if (elIngresos) elIngresos.innerText = `+${totalIngresos.toFixed(2)} €`;
-        if (elGastos) elGastos.innerText = `-${totalGastos.toFixed(2)} €`;
-        if (elBalance) elBalance.innerText = `${balanceTotal.toFixed(2)} €`;
-
-        // Actualizar la pestaña de Desglose automáticamente al recibir datos
-        window.renderizarDesglose();
-    });
-}
-
-// Función auxiliar para convertir HTML en nodo DOM
-function createNodeFromHtml(htmlString) {
-    const div = document.createElement('div');
-    div.innerHTML = htmlString.trim();
-    return div.firstChild;
-}
-
-// --- 4. FUNCIÓN DE DESGLOSE POR MES/AÑO Y ACUMULADO HISTÓRICO ---
-let miGrafico = null; // Variable global para la gráfica
-
-window.renderizarDesglose = function() {
-    const selectMes = document.getElementById('filtroMesDesglose');
-    const selectAnio = document.getElementById('filtroAnioDesglose');
-    const listaContenedor = document.getElementById('listaDesglose');
-    const totalPeriodoElemento = document.getElementById('montoTotalPeriodo');
-
-    if (!listaContenedor) return;
-
-    const mesSeleccionado = selectMes ? selectMes.value : 'todos';
-    const anioSeleccionado = selectAnio ? parseInt(selectAnio.value) : new Date().getFullYear();
-
-    const acumuladoPeriodo = {};
-    const acumuladoHistorico = {};
-    let granTotalPeriodo = 0;
-
-    // Inicializar categorías de gastos a 0
-    Object.keys(nombresCategorias).forEach(cat => {
-        if (cat !== 'nomina') {
-            acumuladoPeriodo[cat] = 0;
-            acumuladoHistorico[cat] = 0;
-        }
-    });
-
-    // Recorrer los movimientos globales
-    if (Array.isArray(movimientosGlobales)) {
-        movimientosGlobales.forEach(mov => {
-            if (mov.tipo === 'gasto') {
-                const cat = mov.categoria || 'ocio';
-                const monto = parseFloat(mov.monto) || 0;
-
-                // 1. Sumar al Acumulado Histórico
-                if (acumuladoHistorico[cat] !== undefined) {
-                    acumuladoHistorico[cat] += monto;
-                } else {
-                    acumuladoHistorico[cat] = monto;
-                }
-
-                // 2. Extraer fecha correctamente de Firestore o Date
-                let fechaMov = null;
-                if (mov.fecha && typeof mov.fecha.toDate === 'function') {
-                    fechaMov = mov.fecha.toDate();
-                } else if (mov.fecha && mov.fecha.seconds) {
-                    fechaMov = new Date(mov.fecha.seconds * 1000);
-                } else if (mov.fecha) {
-                    fechaMov = new Date(mov.fecha);
-                }
-
-                if (fechaMov && !isNaN(fechaMov.getTime())) {
-                    const mesMov = fechaMov.getMonth().toString(); // "0" a "11"
-                    const anioMov = fechaMov.getFullYear();
-
-                    const coincideAnio = (anioMov === anioSeleccionado);
-                    const coincideMes = (mesSeleccionado === 'todos' || mesMov === mesSeleccionado);
-
-                    if (coincideAnio && coincideMes) {
-                        if (acumuladoPeriodo[cat] !== undefined) {
-                            acumuladoPeriodo[cat] += monto;
-                        } else {
-                            acumuladoPeriodo[cat] = monto;
-                        }
-                        granTotalPeriodo += monto;
-                    }
-                }
-            }
-        });
+    if (user) {
+        if (pantallaLogin) pantallaLogin.style.display = "none";
+        if (pantallaApp) pantallaApp.style.display = "block";
+        cargarMovimientosFirebase();
+    } else {
+        if (pantallaLogin) pantallaLogin.style.display = "flex";
+        if (pantallaApp) pantallaApp.style.display = "none";
     }
+});
 
-    // Actualizar total mostrado
-    if (totalPeriodoElemento) {
-        totalPeriodoElemento.textContent = `-${granTotalPeriodo.toFixed(2)} €`;
-    }
-
-    // Renderizar tarjetas e ir preparando arrays para Chart.js
-    listaContenedor.innerHTML = '';
-    const categoriasGastos = Object.keys(nombresCategorias).filter(c => c !== 'nomina');
-    
-    const etiquetasGrafico = [];
-    const valoresGrafico = [];
-
-    categoriasGastos.forEach(cat => {
-        const gastoPeriodo = acumuladoPeriodo[cat] || 0;
-        const gastoHistorico = acumuladoHistorico[cat] || 0;
-
-        // Añadir solo categorías a la gráfica
-        etiquetasGrafico.push(nombresCategorias[cat].replace(/^[^\w\s]+/, '').trim());
-        valoresGrafico.push(gastoPeriodo);
-
-        const cardHtml = `
-            <div class="categoria-card" style="background: var(--card-bg); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                <div class="categoria-info-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span class="categoria-nombre" style="font-weight: bold; font-size: 1rem;">${nombresCategorias[cat]}</span>
-                    <span class="monto-periodo" style="font-size: 1.1rem; font-weight: 700; color: var(--danger);">-${gastoPeriodo.toFixed(2)} €</span>
-                </div>
-                <div class="monto-historico-label" style="font-size: 0.8rem; color: #7f8c8d; display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #ccc;">
-                    <span>Acumulado Histórico Total:</span>
-                    <strong style="color: var(--text-light);">-${gastoHistorico.toFixed(2)} €</strong>
-                </div>
-            </div>
-        `;
-        listaContenedor.appendChild(createNodeFromHtml(cardHtml));
-    });
-
-    // --- DIBUJAR O ACTUALIZAR GRÁFICA DE CHART.JS ---
-    const ctx = document.getElementById('graficoGastos');
-    if (ctx) {
-        if (typeof Chart === 'undefined') {
-            console.error("Chart.js no está cargado correctamente en el HTML.");
-            return;
-        }
-
-        if (miGrafico) {
-            miGrafico.destroy(); // Destruir instancia anterior
-        }
-
-        miGrafico = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: etiquetasGrafico,
-                datasets: [{
-                    label: 'Gastos (€)',
-                    data: valoresGrafico,
-                    backgroundColor: [
-                        '#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6'
-                    ],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) { return value + ' €'; }
-                        }
-                    }
-                }
-            }
-        });
-    }
-};
-window.borrarMovimiento = async function(id) {
-    if (confirm("¿Estás seguro de que quieres borrar este movimiento?")) {
-        try {
-            await deleteDoc(doc(db, "movimientos", id));
-            console.log("Movimiento borrado correctamente");
-        } catch (e) {
-            console.error("Error al borrar movimiento:", e);
-        }
-    }
-};
-
-// --- 5. INTERACCIONES DE LA INTERFAZ ---
+// ==========================================
+// 2. GUARDAR NUEVO MOVIMIENTO
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    
-    // --- MANUAL DE USO ---
-    const btnAbrirManual = document.getElementById('btnAbrirManual');
-    const btnCerrarManual = document.getElementById('btnCerrarManual');
-    const modalManual = document.getElementById('modalManual');
-
-    if (btnAbrirManual && modalManual) {
-        btnAbrirManual.addEventListener('click', () => {
-            modalManual.classList.remove('hidden');
-            modalManual.style.display = 'flex';
-        });
-    }
-
-    if (btnCerrarManual && modalManual) {
-        btnCerrarManual.addEventListener('click', () => {
-            modalManual.classList.add('hidden');
-            modalManual.style.display = 'none';
-        });
-    }
-
-    // --- MODO OSCURO ---
-    const btnToggleDarkMode = document.getElementById('btnToggleDarkMode');
-    const btnToggleDarkModeModal = document.getElementById('btnToggleDarkModeModal');
-
-    const alternarModoOscuro = () => {
-        document.body.classList.toggle('dark-mode');
-    };
-
-    if (btnToggleDarkMode) btnToggleDarkMode.addEventListener('click', alternarModoOscuro);
-    if (btnToggleDarkModeModal) btnToggleDarkModeModal.addEventListener('click', alternarModoOscuro);
-
-    // --- FORMULARIO DE MOVIMIENTOS ---
-    const formMovimiento = document.getElementById('formMovimiento');
+    const formMovimiento = document.getElementById("formMovimiento");
     if (formMovimiento) {
-        formMovimiento.addEventListener('submit', async (e) => {
+        formMovimiento.addEventListener("submit", async (e) => {
             e.preventDefault();
-            
-            if (!usuarioActual) {
-                alert("Debes iniciar sesión para guardar movimientos.");
-                return;
-            }
 
-            const concepto = document.getElementById('concepto').value;
-            const monto = document.getElementById('monto').value;
-            const categoriaSelect = document.getElementById('categoria');
-            const tipoSelect = document.getElementById('tipo');
-
-            const categoria = categoriaSelect ? categoriaSelect.value : 'comida';
-            const tipo = tipoSelect ? tipoSelect.value : 'gasto';
+            const concepto = document.getElementById("concepto").value;
+            const monto = parseFloat(document.getElementById("monto").value);
+            const categoria = document.getElementById("categoria").value;
+            const tipo = document.getElementById("tipo").value;
+            const fechaHoy = new Date().toISOString().split('T')[0];
 
             try {
                 await addDoc(collection(db, "movimientos"), {
-                    uid: usuarioActual.uid,
                     concepto: concepto,
-                    monto: parseFloat(monto),
+                    monto: monto,
                     categoria: categoria,
                     tipo: tipo,
-                    fecha: new Date()
+                    fecha: fechaHoy
                 });
-
                 formMovimiento.reset();
-                console.log("Movimiento guardado con éxito en Firestore");
             } catch (error) {
-                console.error("Error al guardar en Firestore:", error);
-                alert("Hubo un error al guardar el movimiento: " + error.message);
+                console.error("Error al guardar movimiento:", error);
+                alert("Error al guardar movimiento: " + error.message);
             }
         });
     }
 });
 
-window.borrarTodosLosDatos = async function() {
-    // Doble confirmación para evitar disgustos
-    const confirmar1 = confirm("⚠️ ¡ATENCIÓN! Vas a borrar TODOS tus movimientos y finanzas guardadas. ¿Estás seguro de que quieres perder todos los datos?");
-    if (!confirmar1) return;
+// ==========================================
+// 3. GESTIÓN DE GASTOS FIJOS (PLANTILLAS)
+// ==========================================
+onSnapshot(collection(db, "gastosFijos"), (snapshot) => {
+    plantillasGastosFijos = [];
+    const listaContenedor = document.getElementById("listaGastosFijos");
+    if (!listaContenedor) return;
 
-    const confirmar2 = confirm("🚨 Último aviso: Esta acción no se puede deshacer. ¿Deseas vaciar por completo tu historial?");
-    if (!confirmar2) return;
+    listaContenedor.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+        const item = { id: docSnap.id, ...docSnap.data() };
+        plantillasGastosFijos.push(item);
+
+        const div = document.createElement("div");
+        div.className = "movimiento-item";
+        div.innerHTML = `
+            <div class="movimiento-info">
+                <strong>${item.concepto}</strong>
+                <span class="movimiento-categoria">${item.categoria}</span>
+            </div>
+            <div class="movimiento-monto gasto">
+                -${item.monto} €
+                <button onclick="borrarGastoFijo('${item.id}')" class="btn-borrar">❌</button>
+            </div>
+        `;
+        listaContenedor.appendChild(div);
+    });
+
+    if (plantillasGastosFijos.length === 0) {
+        listaContenedor.innerHTML = "<p style='text-align: center; color: #7f8c8d;'>No tienes gastos fijos configurados.</p>";
+    }
+    
+    verificarGastosFijosAutomaticos();
+});
+
+window.guardarGastoFijo = async function(event) {
+    event.preventDefault();
+    const concepto = document.getElementById("fijoConcepto").value;
+    const monto = parseFloat(document.getElementById("fijoMonto").value);
+    const categoria = document.getElementById("fijoCategoria").value;
 
     try {
-        // Recorrer el array global y borrar cada documento de Firestore uno a uno
-        const promesas = movimientosGlobales.map(mov => {
-            return deleteDoc(doc(db, "movimientos", mov.id));
+        await addDoc(collection(db, "gastosFijos"), {
+            concepto: concepto,
+            monto: monto,
+            categoria: categoria
         });
-
-        await Promise.all(promesas);
-        alert("¡Todos los datos han sido borrados correctamente! La cuenta está a cero.");
-        console.log("Historial vaciado por completo.");
-    } catch (e) {
-        console.error("Error al borrar todos los datos:", e);
-        alert("Hubo un error al intentar borrar los datos.");
+        document.getElementById("formGastoFijo").reset();
+        alert("¡Gasto fijo guardado como plantilla! 📌");
+    } catch (error) {
+        console.error("Error al guardar gasto fijo:", error);
     }
 };
+
+window.borrarGastoFijo = async function(id) {
+    if (confirm("¿Quieres eliminar este gasto fijo de tus plantillas futuras?")) {
+        try {
+            await deleteDoc(doc(db, "gastosFijos", id));
+        } catch (error) {
+            console.error("Error al borrar gasto fijo:", error);
+        }
+    }
+};
+
+async function verificarGastosFijosAutomaticos() {
+    if (plantillasGastosFijos.length === 0) return;
+
+    const fechaActual = new Date();
+    const anioActual = fechaActual.getFullYear();
+    const mesActual = fechaActual.getMonth();
+    const claveMes = `${anioActual}-${mesActual}`;
+
+    const mesYaCargado = localStorage.getItem("gastosFijosCargados_" + claveMes);
+
+    if (!mesYaCargado) {
+        const fechaHoy = fechaActual.toISOString().split('T')[0];
+
+        try {
+            const promesas = plantillasGastosFijos.map(gasto => {
+                return addDoc(collection(db, "movimientos"), {
+                    concepto: gasto.concepto,
+                    monto: gasto.monto,
+                    categoria: gasto.categoria,
+                    tipo: "gasto",
+                    fecha: fechaHoy
+                });
+            });
+
+            await Promise.all(promesas);
+            localStorage.setItem("gastosFijosCargados_" + claveMes, "true");
+        } catch (error) {
+            console.error("Error al generar gastos fijos automáticos:", error);
+        }
+    }
+}
+
+// ==========================================
+// 4. CARGAR MOVIMIENTOS E HISTORIAL (CON LÍMITE SEGURO EN INICIO)
+// ==========================================
+function cargarMovimientosFirebase() {
+    onSnapshot(collection(db, "movimientos"), (snapshot) => {
+        const contenedorInicio = document.getElementById("listaMovimientos");
+        const contenedorHistorial = document.getElementById("listaMovimientosHistorial");
+
+        if (contenedorInicio) contenedorInicio.innerHTML = "";
+        if (contenedorHistorial) contenedorHistorial.innerHTML = "";
+        
+        let totalIngresos = 0;
+        let totalGastos = 0;
+        todosLosMovimientosCache = []; 
+
+        let contadorInicio = 0;
+        const limiteInicio = 5; // <--- Aquí limitamos los que se ven en Inicio
+
+        snapshot.forEach((docSnap) => {
+            const mov = docSnap.data();
+            const id = docSnap.id;
+            todosLosMovimientosCache.push(mov); 
+
+            const montoNum = parseFloat(mov.monto) || 0;
+            if (mov.tipo === "ingreso") {
+                totalIngresos += montoNum;
+            } else {
+                totalGastos += montoNum;
+            }
+
+            let fechaLegible = "";
+            if (mov.fecha) {
+                if (mov.fecha.seconds) {
+                    const fechaDate = new Date(mov.fecha.seconds * 1000);
+                    fechaLegible = fechaDate.toLocaleDateString();
+                } else {
+                    fechaLegible = mov.fecha;
+                }
+            }
+
+            const htmlItem = `
+                <div class="movimiento-item">
+                    <div class="movimiento-info">
+                        <strong>${mov.concepto}</strong>
+                        <span class="movimiento-categoria">${mov.categoria || 'General'}</span>
+                        <small style="display: block; color: #888;">${fechaLegible}</small>
+                    </div>
+                    <div class="movimiento-monto ${mov.tipo === 'ingreso' ? 'ingreso' : 'gasto'}">
+                        ${mov.tipo === 'ingreso' ? '+' : '-'}${montoNum} €
+                        <button onclick="borrarMovimiento('${id}')" class="btn-borrar">❌</button>
+                    </div>
+                </div>
+            `;
+
+            // En Inicio solo metemos los primeros según el límite
+            if (contenedorInicio && contadorInicio < limiteInicio) {
+                contenedorInicio.insertAdjacentHTML("beforeend", htmlItem);
+                contadorInicio++;
+            }
+
+            // En Historial se muestran todos
+            if (contenedorHistorial) {
+                if (filtroHistorialActivo === "todos" || mov.tipo === filtroHistorialActivo) {
+                    contenedorHistorial.insertAdjacentHTML("beforeend", htmlItem);
+                }
+            }
+        });
+
+        const elIngresos = document.getElementById("totalIngresos");
+        const elGastos = document.getElementById("totalGastos");
+        const elBalance = document.getElementById("totalBalance");
+
+        if (elIngresos) elIngresos.textContent = "+" + totalIngresos.toFixed(2) + " €";
+        if (elGastos) elGastos.textContent = "-" + totalGastos.toFixed(2) + " €";
+        if (elBalance) elBalance.textContent = (totalIngresos - totalGastos).toFixed(2) + " €";
+
+        actualizarGraficaDesglose(todosLosMovimientosCache);
+    });
+}
+
+window.borrarMovimiento = async function(id) {
+    if (confirm("¿Quieres eliminar este movimiento?")) {
+        try {
+            await deleteDoc(doc(db, "movimientos", id));
+        } catch (error) {
+            console.error("Error al borrar movimiento:", error);
+        }
+    }
+};
+
+// ==========================================
+// 5. GRÁFICA DE BARRAS Y FILTRO DE DESGLOSE (SEGURO CONTRA FORMATOS)
+// ==========================================
+function actualizarGraficaDesglose(movimientos) {
+    const canvas = document.getElementById("graficoGastos");
+    if (!canvas) return;
+
+    const selectMes = document.getElementById("filtroMesDesglose");
+    const selectAnio = document.getElementById("filtroAnioDesglose");
+
+    const mesSeleccionado = selectMes ? selectMes.value : "todos"; // Ej: "9" (Octubre) o "todos"
+    const anioSeleccionado = selectAnio ? selectAnio.value : "2026";
+
+    // Filtrar los movimientos de forma 100% segura
+    const movimientosFiltrados = movimientos.filter(mov => {
+        if (!mov.fecha) return false;
+
+        let fechaStr = "";
+
+        // Convertir la fecha a formato string "YYYY-MM-DD" sin importar cómo venga de Firebase
+        if (typeof mov.fecha === "string") {
+            fechaStr = mov.fecha;
+        } else if (mov.fecha.seconds) {
+            // Es un Timestamp de Firebase
+            const d = new Date(mov.fecha.seconds * 1000);
+            fechaStr = d.toISOString().split('T')[0];
+        } else if (mov.fecha instanceof Date) {
+            fechaStr = mov.fecha.toISOString().split('T')[0];
+        } else {
+            return false;
+        }
+
+        const partesFecha = fechaStr.split("-");
+        if (partesFecha.length < 3) return false;
+
+        const anioMov = partesFecha[0];                              // Ej: "2026"
+        const mesMovNumJS = String(parseInt(partesFecha[1], 10) - 1); // Ej: "10" pasa a "9"
+
+        // 1. Validar año
+        if (anioMov !== String(anioSeleccionado)) return false;
+
+        // 2. Validar mes (si no es "todos")
+        if (mesSeleccionado !== "todos") {
+            if (mesMovNumJS !== String(mesSeleccionado)) {
+                return false;
+            }
+        }
+
+        return true;
+    });
+
+    const ctx = canvas.getContext("2d");
+
+    const categorias = {};
+    let totalGastoPeriodo = 0;
+
+    movimientosFiltrados.forEach(mov => {
+        if (mov.tipo === "gasto") {
+            const cat = mov.categoria || "general";
+            const montoNum = parseFloat(mov.monto) || 0;
+            
+            categorias[cat] = (categorias[cat] || 0) + montoNum;
+            totalGastoPeriodo += montoNum;
+        }
+    });
+
+    // Actualizar la caja naranja con el total del periodo
+    const elementoTotal = document.getElementById("montoTotalPeriodo"); 
+    if (elementoTotal) {
+        elementoTotal.textContent = totalGastoPeriodo.toFixed(2) + " €";
+    }
+
+    const labels = Object.keys(categorias);
+    const data = Object.values(categorias);
+
+    const coloresDisponibles = [
+        '#E67E22', // Naranja Panda
+        '#27AE60', // Verde
+        '#2980B9', // Azul
+        '#8E44AD', // Morado
+        '#C0392B', // Rojo
+        '#F1C40F'  // Amarillo
+    ];
+
+    const backgroundColors = labels.map((_, index) => coloresDisponibles[index % coloresDisponibles.length]);
+
+    if (miGraficoGastos) {
+        miGraficoGastos.destroy();
+    }
+
+    miGraficoGastos = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels.length > 0 ? labels : ["Sin gastos"],
+            datasets: [{
+                label: 'Gastos por Categoría (€)',
+                data: data.length > 0 ? data : [0],
+                backgroundColor: backgroundColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+// Eventos para actualizar al instante al cambiar de mes o año en los selectores
+document.addEventListener("DOMContentLoaded", () => {
+    const selectMes = document.getElementById("filtroMesDesglose");
+    const selectAnio = document.getElementById("filtroAnioDesglose");
+
+    if (selectMes) {
+        selectMes.addEventListener("change", () => {
+            if (todosLosMovimientosCache.length > 0) {
+                actualizarGraficaDesglose(todosLosMovimientosCache);
+            }
+        });
+    }
+
+    if (selectAnio) {
+        selectAnio.addEventListener("change", () => {
+            if (todosLosMovimientosCache.length > 0) {
+                actualizarGraficaDesglose(todosLosMovimientosCache);
+            }
+        });
+    }
+});
+
+// ==========================================
+// 6. NAVEGACIÓN ENTRE PESTAÑAS
+// ==========================================
+window.cambiarPestana = function(idTab, elementoBoton) {
+    const pestanas = document.querySelectorAll('.tab-content');
+    pestanas.forEach(tab => {
+        tab.classList.add('hidden');
+        tab.classList.remove('active');
+    });
+
+    const botones = document.querySelectorAll('.nav-tab-btn');
+    botones.forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    const tabSeleccionada = document.getElementById(idTab);
+    if (tabSeleccionada) {
+        tabSeleccionada.classList.remove('hidden');
+        tabSeleccionada.classList.add('active');
+    }
+
+    if (elementoBoton) {
+        elementoBoton.classList.add('active');
+    }
+};
+
+// ==========================================
+// 7. CONTROL DE LA VENTANA MANUAL
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    const modalManual = document.getElementById("modalManual");
+    const btnAbrirManual = document.getElementById("btnAbrirManual");
+    const btnCerrarManual = document.getElementById("btnCerrarManual");
+
+    if (btnAbrirManual && modalManual) {
+        btnAbrirManual.addEventListener("click", () => {
+            modalManual.classList.remove("hidden");
+        });
+    }
+
+    if (btnCerrarManual && modalManual) {
+        btnCerrarManual.addEventListener("click", () => {
+            modalManual.classList.add("hidden");
+        });
+    }
+
+    if (modalManual) {
+        modalManual.addEventListener("click", (e) => {
+            if (e.target === modalManual) {
+                modalManual.classList.add("hidden");
+            }
+        });
+    }
+});
+
+// ==========================================
+// 8. MODO OSCURO (LUNA / SOL)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    const btnToggleDarkMode = document.getElementById("btnToggleDarkMode");
+    const btnToggleDarkModeModal = document.getElementById("btnToggleDarkModeModal");
+
+    function alternarModoOscuro() {
+        document.body.classList.toggle("dark-mode");
+        const esOscuro = document.body.classList.contains("dark-mode");
+        
+        const nuevoIcono = esOscuro ? "☀️" : "🌙";
+        if (btnToggleDarkMode) btnToggleDarkMode.textContent = nuevoIcono;
+        if (btnToggleDarkModeModal) btnToggleDarkModeModal.textContent = nuevoIcono;
+        
+        // --- FORZAR COLOR EN SELECTS DESDE JS ---
+        const todosLosSelects = document.querySelectorAll("select");
+        todosLosSelects.forEach(sel => {
+            sel.style.color = esOscuro ? "#ffffff" : "#333333";
+            sel.style.backgroundColor = esOscuro ? "#1e293b" : "#ffffff";
+        });
+        // ----------------------------------------
+
+        localStorage.setItem("darkMode", esOscuro ? "enabled" : "disabled");
+    }
+
+    if (localStorage.getItem("darkMode") === "enabled") {
+        document.body.classList.add("dark-mode");
+        if (btnToggleDarkMode) btnToggleDarkMode.textContent = "☀️";
+        if (btnToggleDarkModeModal) btnToggleDarkModeModal.textContent = "☀️";
+    }
+
+    if (btnToggleDarkMode) {
+        btnToggleDarkMode.addEventListener("click", alternarModoOscuro);
+    }
+    if (btnToggleDarkModeModal) {
+        btnToggleDarkModeModal.addEventListener("click", alternarModoOscuro);
+    }
+});
+
+// ==========================================
+// 9. EVENTOS DE FILTRADO EN HISTORIAL (BOTONES)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    const botonesFiltro = document.querySelectorAll(".filtros-historial .btn-filtro");
+
+    botonesFiltro.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            botonesFiltro.forEach((b) => b.classList.remove("active"));
+            e.target.classList.add("active");
+            
+            filtroHistorialActivo = e.target.getAttribute("data-filtro");
+            
+            if (typeof cargarMovimientosFirebase === "function") {
+                cargarMovimientosFirebase();
+            }
+        });
+    });
+});
+
+// ==========================================
+// 10. EVENTOS DE FILTRADO EN DESGLOSE (SELECTORES MES / AÑO)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    const selectMes = document.getElementById("filtroMesDesglose");
+    const selectAnio = document.getElementById("filtroAnioDesglose");
+
+    if (selectMes) {
+        selectMes.addEventListener("change", () => {
+            if (todosLosMovimientosCache.length > 0) {
+                actualizarGraficaDesglose(todosLosMovimientosCache);
+            }
+        });
+    }
+
+    if (selectAnio) {
+        selectAnio.addEventListener("change", () => {
+            if (todosLosMovimientosCache.length > 0) {
+                actualizarGraficaDesglose(todosLosMovimientosCache);
+            }
+        });
+    }
+});
