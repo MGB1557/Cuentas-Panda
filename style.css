@@ -483,3 +483,18 @@ body.dark-mode h3 {
         margin: 0 !important;
     }
 }
+/* --- CORRECCIÓN PARA DESLIZAR LA BARRA DE NAVEGACIÓN EN MÓVIL --- */
+@media (max-width: 768px) {
+    .top-nav-buttons {
+        display: flex !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        white-space: nowrap !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .nav-tab-btn {
+        flex: 0 0 auto !important;
+    }
+}
