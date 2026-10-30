@@ -194,6 +194,7 @@ body {
     padding: 4px;
     border-radius: 10px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 body.dark-mode .top-nav-buttons {
@@ -211,6 +212,7 @@ body.dark-mode .top-nav-buttons {
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s ease;
+    flex: 0 0 auto;
 }
 
 body.dark-mode .nav-tab-btn {
@@ -428,70 +430,56 @@ body.dark-mode h3 {
     color: var(--text-color, #f8fafc);
 }
 
-/* --- ADAPTACIÓN MÓVIL SENCILLA Y LIMPIA --- */
+/* --- ADAPTACIÓN MÓVIL DIRECTA Y LIMPIA --- */
 @media (max-width: 768px) {
-    /* Apilamos el formulario principal de inicio */
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+
     .modern-form {
         display: flex !important;
         flex-direction: column !important;
         gap: 10px !important;
     }
+
     .modern-form input,
     .modern-form select,
     .modern-form button {
         width: 100% !important;
     }
+
     .btn-primary-large {
         grid-column: span 1 !important;
     }
 
-    /* Arreglo limpio para la tarjeta de Gastos Fijos sin romper estilos en línea */
-    #tabGastosFijos .card {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        padding: 15px !important;
+    /* Gastos Fijos en móvil */
+    #tabGastosFijos {
+        display: none; /* Respeta el sistema de pestañas de la app */
+    }
+
+    #tabGastosFijos.active {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 5px !important;
     }
 
     #formGastoFijo {
         display: flex !important;
         flex-direction: column !important;
-        gap: 10px !important;
         width: 100% !important;
+        flex-wrap: nowrap !important;
+        gap: 12px !important;
+        box-sizing: border-box !important;
     }
 
     #formGastoFijo input,
     #formGastoFijo select,
     #formGastoFijo button {
         width: 100% !important;
-        margin: 0 !important;
-    }
-}
-
-/* --- CORRECCIÓN DE LA BARRA DE PESTAÑAS SUPERIOR EN MÓVIL --- */
-@media (max-width: 768px) {
-    /* 1. Aseguramos que el contenedor de los botones de pestaña permita desplazamiento horizontal fluido */
-    .top-nav-buttons {
-        display: flex !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        white-space: nowrap !important;
-        gap: 6px !important;
-        padding: 6px 10px !important;
-        width: 100% !important;
+        flex: none !important;
         box-sizing: border-box !important;
-        /* Oculta la barra de scroll fea pero mantiene el deslizamiento */
-        scrollbar-width: none; 
-    }
-
-    .top-nav-buttons::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* 2. Hacemos que cada botón de pestaña tenga un tamaño cómodo para pulsar y no se encoja */
-    .nav-tab-btn {
-        flex: 0 0 auto !important;
-        padding: 8px 12px !important;
-        font-size: 0.8rem !important;
+        margin: 0 !important;
     }
 }
