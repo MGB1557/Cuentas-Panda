@@ -467,3 +467,31 @@ body.dark-mode h3 {
         margin: 0 !important;
     }
 }
+
+/* --- CORRECCIÓN DE LA BARRA DE PESTAÑAS SUPERIOR EN MÓVIL --- */
+@media (max-width: 768px) {
+    /* 1. Aseguramos que el contenedor de los botones de pestaña permita desplazamiento horizontal fluido */
+    .top-nav-buttons {
+        display: flex !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        white-space: nowrap !important;
+        gap: 6px !important;
+        padding: 6px 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        /* Oculta la barra de scroll fea pero mantiene el deslizamiento */
+        scrollbar-width: none; 
+    }
+
+    .top-nav-buttons::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 2. Hacemos que cada botón de pestaña tenga un tamaño cómodo para pulsar y no se encoja */
+    .nav-tab-btn {
+        flex: 0 0 auto !important;
+        padding: 8px 12px !important;
+        font-size: 0.8rem !important;
+    }
+}
