@@ -428,72 +428,32 @@ body.dark-mode h3 {
     color: var(--text-color, #f8fafc);
 }
 
-/* --- ADAPTACIÓN RESPONSIVE TOTAL PARA MÓVILES --- */
+/* --- SOLUCIÓN DEFINITIVA PARA LA PESTAÑA GASTOS FIJOS EN MÓVIL --- */
 @media (max-width: 768px) {
-    .summary-cards {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px !important;
-        width: 100% !important;
-    }
-
-    .card {
+    /* Forzamos que la pestaña de gastos fijos se muestre en bloque y se centre */
+    #tabGastosFijos, 
+    #tabGastosFijos.tab-content.active {
+        display: block !important;
         width: 100% !important;
         box-sizing: border-box !important;
-    }
-
-    .modern-form {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-        width: 100% !important;
-    }
-
-    .modern-form .form-group,
-    .modern-form input,
-    .modern-form select,
-    .modern-form button {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    .btn-primary-large {
-        width: 100% !important;
-        grid-column: span 1 !important;
-    }
-
-    /* Solución definitiva para la pantalla de Gastos Fijos en móvil */
-    #secGastosFijos, 
-    div[id*="GastosFijos"],
-    .gastos-fijos-container {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        width: 100% !important;
         padding: 5px !important;
-        box-sizing: border-box !important;
     }
 
-    #secGastosFijos form, 
-    div[id*="GastosFijos"] form,
-    .gastos-fijos-form {
+    /* Anulamos el flex-wrap horizontal y ponemos los elementos en columna vertical */
+    #formGastoFijo {
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        max-width: 100% !important;
+        flex-wrap: nowrap !important;
         gap: 12px !important;
-        margin-top: 15px !important;
     }
 
-    #secGastosFijos input, 
-    #secGastosFijos select, 
-    #secGastosFijos button,
-    div[id*="GastosFijos"] input, 
-    div[id*="GastosFijos"] select, 
-    div[id*="GastosFijos"] button {
+    /* Todos los inputs, selects y botones ocuparán el 100% del ancho del móvil */
+    #formGastoFijo input,
+    #formGastoFijo select,
+    #formGastoFijo button {
         width: 100% !important;
-        margin: 0 !important;
+        flex: none !important;
         box-sizing: border-box !important;
     }
 }
