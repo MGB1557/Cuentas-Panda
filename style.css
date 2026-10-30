@@ -87,16 +87,32 @@ body {
     color: #333;
 }
 
-/* --- HEADER Y MASCOTA --- */
+/* --- HEADER Y MASCOTA (FIJO ABSOLUTO) --- */
 .main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     background: linear-gradient(135deg, #2c3e50, #3498db);
     color: white;
-    padding: 20px;
-    border-radius: 16px;
+    padding: 12px 20px;
+    border-radius: 0; /* Sin bordes redondeados para que ocupe de lado a lado de forma limpia */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Compensamos el espacio para que la cabecera fija no tape el inicio de la app */
+/* --- CONTENEDOR PRINCIPAL --- */
+.app-container {
+    padding-top: 110px; /* Aumentamos el espacio para que la cabecera fija no tape las cajas */
+    max-width: 800px;
+    margin: 0 auto;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .avatar-container {
@@ -305,12 +321,17 @@ body.dark-mode .nav-tab-btn {
 /* --- VENTANA MODAL --- */
 .modal-backdrop {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 200;
+    z-index: 2000;
+    padding: 20px; /* Margen de seguridad alrededor para que no pegue a los bordes en móviles */
+    box-sizing: border-box;
 }
 
 .modal-backdrop.hidden {
@@ -318,15 +339,18 @@ body.dark-mode .nav-tab-btn {
 }
 
 .modal-content {
-    background: var(--card-bg);
+    background-color: var(--card-bg, #ffffff);
+    color: var(--text-color, #333333);
     padding: 25px;
     border-radius: 16px;
-    max-width: 500px;
-    width: 90%;
+    width: 100%;
+    max-width: 480px;
     max-height: 80vh;
     overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+    margin: 0 auto; /* Garantiza que no se desplace hacia ningún lado */
 }
-
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -492,3 +516,162 @@ body.dark-mode .monto-historico-label {
 .btn-borrar-general:hover {
     background-color: #c0392b;
 }
+
+/* --- BOTONES DE FILTRO HISTORIAL (ADAPTADOS A MODO OSCURO) --- */
+.filtros-historial {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.filtros-historial .btn-filtro {
+    background-color: var(--card-bg, #ffffff);
+    color: var(--text-color, #333333);
+    border: 1px solid var(--border-color, #ccc);
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.filtros-historial .btn-filtro:hover {
+    opacity: 0.85;
+}
+
+/* El botón activo siempre destaca con su fondo azul y texto blanco legible */
+.filtros-historial .btn-filtro.active {
+    background-color: #3498db;
+    color: #ffffff !important;
+    border-color: #3498db;
+}
+
+/* Ajuste específico de bordes para que se vean bien en modo oscuro */
+body.dark-mode .filtros-historial .btn-filtro {
+    border-color: #444444;
+}
+
+/* --- CORRECCIÓN DEFINITIVA FILTROS HISTORIAL (MODO CLARO Y OSCURO) --- */
+.filtros-historial {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+/* Modo Normal (Claro) */
+.filtros-historial .btn-filtro {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #ccc;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.filtros-historial .btn-filtro:hover {
+    background-color: #f0f0f0;
+}
+
+.filtros-historial .btn-filtro.active {
+    background-color: #3498db;
+    color: #ffffff !important;
+    border-color: #3498db;
+}
+
+/* Modo Oscuro Forzado para los Filtros */
+body.dark-mode .filtros-historial .btn-filtro {
+    background-color: #2c3e50 !important;
+    color: #ffffff !important;
+    border: 1px solid #4a6fa5 !important;
+}
+
+body.dark-mode .filtros-historial .btn-filtro:hover {
+    background-color: #34495e !important;
+}
+
+body.dark-mode .filtros-historial .btn-filtro.active {
+    background-color: #3498db !important;
+    color: #ffffff !important;
+    border-color: #5dade2 !important;
+}
+
+/* --- SOLUCIÓN DEFINITIVA MODO OSCURO (GLOBAL) --- */
+
+/* 1. Fuerza al navegador a entender que la app soporta modo oscuro nativo */
+body.dark-mode {
+    color-scheme: dark;
+}
+
+/* 2. Todos los inputs, selects y textareas en modo oscuro */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea,
+body.dark-mode .form-control,
+body.dark-mode .input-group input {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    color-scheme: dark;
+    border: 1px solid #475569 !important;
+}
+
+/* 3. Asegurar que el texto dentro sea blanco sí o sí */
+body.dark-mode input::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
+}
+
+/* 4. Forzar textos de las tarjetas e historial en oscuro */
+body.dark-mode, 
+body.dark-mode p, 
+body.dark-mode span, 
+body.dark-mode strong, 
+body.dark-mode label, 
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3 {
+    color: var(--text-color, #f8fafc);
+}
+
+/* --- FORZAR SELECTS EN MODO OSCURO SIN QUE EL NAVEGADOR LOS BLOQUEE --- */
+body.dark-mode select {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    /* Añadimos una flechita blanca para que se vea bien el desplegable */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+    padding-right: 35px !important;
+}
+
+body.dark-mode select option {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+}
+
+/* --- ATAQUE DE FUERZA BRUTA PARA SELECTS EN MODO OSCURO --- */
+body.dark-mode select,
+body.dark-mode select option,
+body.dark-mode .form-control select,
+body.dark-mode .input-group select {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Forzar el color de las letras dentro del select seleccionado */
+body.dark-mode select option:checked,
+body.dark-mode select option:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+
