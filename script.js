@@ -155,19 +155,142 @@ window.guardarGastoFijo = async function(event) {
     const concepto = document.getElementById("fijoConcepto").value;
     const monto = parseFloat(document.getElementById("fijoMonto").value);
     const categoria = document.getElementById("fijoCategoria").value;
+    const fechaHoy = new Date().toISOString().split('T')[0];
 
     try {
+        // 1. Guardar como plantilla de gasto fijo
         await addDoc(collection(db, "gastosFijos"), {
             concepto: concepto,
             monto: monto,
             categoria: categoria
         });
+
+        // 2. MODIFICAR AQUÍ: Añadir " (Fijo)" para que se vea igual que la nómina
+        await addDoc(collection(db, "movimientos"), {
+            concepto: concepto + " (Fijo)", // <--- ¡Añadimos esto!
+            monto: monto,
+            categoria: categoria,
+            tipo: "gasto",
+            fecha: fechaHoy
+        });
+
         document.getElementById("formGastoFijo").reset();
-        alert("¡Gasto fijo guardado como plantilla! 📌");
+        alert("¡Gasto fijo guardado y añadido a tus movimientos del mes! 📌");
     } catch (error) {
         console.error("Error al guardar gasto fijo:", error);
     }
 };
+// ==========================================
+// GESTIÓN DE INGRESOS FIJOS (NÓMINA, ETC.)
+// ==========================================
+let plantillasIngresosFijos = [];
+
+onSnapshot(collection(db, "ingresosFijos"), (snapshot) => {
+    plantillasIngresosFijos = [];
+    const listaContenedor = document.getElementById("listaIngresosFijos");
+    if (!listaContenedor) return; // Si no está en el HTML actual, no da error
+
+    listaContenedor.innerHTML = "";
+
+    snapshot.forEach((docSnap) => {
+        const item = { id: docSnap.id, ...docSnap.data() };
+        plantillasIngresosFijos.push(item);
+
+        const div = document.createElement("div");
+        div.className = "movimiento-item";
+        div.innerHTML = `
+            <div class="movimiento-info">
+                <strong>${item.concepto}</strong>
+                <span class="movimiento-categoria">${item.categoria}</span>
+            </div>
+            <div class="movimiento-monto ingreso">
+                +${item.monto} €
+                <button onclick="borrarIngresoFijo('${item.id}')" class="btn-borrar">❌</button>
+            </div>
+        `;
+        listaContenedor.appendChild(div);
+    });
+
+    if (plantillasIngresosFijos.length === 0) {
+        listaContenedor.innerHTML = "<p style='text-align: center; color: #7f8c8d;'>No tienes ingresos fijos configurados.</p>";
+    }
+    
+    verificarIngresosFijosAutomaticos();
+});
+
+window.guardarIngresoFijo = async function(event) {
+    event.preventDefault();
+    const concepto = document.getElementById("ingresoFijoConcepto").value;
+    const monto = parseFloat(document.getElementById("ingresoFijoMonto").value);
+    const categoria = document.getElementById("ingresoFijoCategoria").value;
+    const fechaHoy = new Date().toISOString().split('T')[0];
+
+    try {
+        // 1. Guardar como plantilla de ingreso fijo
+        await addDoc(collection(db, "ingresosFijos"), {
+            concepto: concepto,
+            monto: monto,
+            categoria: categoria
+        });
+
+        // 2. Guardarlo también como movimiento de ingreso del mes actual
+        await addDoc(collection(db, "movimientos"), {
+            concepto: concepto + " (Fijo)",
+            monto: monto,
+            categoria: categoria,
+            tipo: "ingreso",
+            fecha: fechaHoy
+        });
+
+        document.getElementById("formIngresoFijo").reset();
+        alert("¡Ingreso fijo (nómina) guardado y añadido a tus ingresos del mes! 💰");
+    } catch (error) {
+        console.error("Error al guardar ingreso fijo:", error);
+        alert("Error al guardar el ingreso fijo: " + error.message);
+    }
+};
+
+window.borrarIngresoFijo = async function(id) {
+    if (confirm("¿Quieres eliminar este ingreso fijo de tus plantillas?")) {
+        try {
+            await deleteDoc(doc(db, "ingresosFijos", id));
+        } catch (error) {
+            console.error("Error al borrar ingreso fijo:", error);
+        }
+    }
+};
+
+async function verificarIngresosFijosAutomaticos() {
+    if (plantillasIngresosFijos.length === 0) return;
+
+    const fechaActual = new Date();
+    const anioActual = fechaActual.getFullYear();
+    const mesActual = fechaActual.getMonth();
+    const claveMes = `${anioActual}-${mesActual}`;
+
+    const mesYaCargado = localStorage.getItem("ingresosFijosCargados_" + claveMes);
+
+    if (!mesYaCargado) {
+        const fechaHoy = fechaActual.toISOString().split('T')[0];
+
+        try {
+            const promesas = plantillasIngresosFijos.map(ingreso => {
+                return addDoc(collection(db, "movimientos"), {
+                    concepto: ingreso.concepto,
+                    monto: ingreso.monto,
+                    categoria: ingreso.categoria,
+                    tipo: "ingreso",
+                    fecha: fechaHoy
+                });
+            });
+
+            await Promise.all(promesas);
+            localStorage.setItem("ingresosFijosCargados_" + claveMes, "true");
+        } catch (error) {
+            console.error("Error al generar ingresos fijos automáticos:", error);
+        }
+    }
+}
 
 window.borrarGastoFijo = async function(id) {
     if (confirm("¿Quieres eliminar este gasto fijo de tus plantillas futuras?")) {
