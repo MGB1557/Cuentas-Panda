@@ -30,9 +30,11 @@ body {
 
 /* --- CONTENEDOR PRINCIPAL --- */
 .app-container {
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 15px;
+    padding-top: 110px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 /* --- PANTALLA LOGIN --- */
@@ -97,22 +99,12 @@ body {
     background: linear-gradient(135deg, #2c3e50, #3498db);
     color: white;
     padding: 12px 20px;
-    border-radius: 0; /* Sin bordes redondeados para que ocupe de lado a lado de forma limpia */
+    border-radius: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-/* Compensamos el espacio para que la cabecera fija no tape el inicio de la app */
-/* --- CONTENEDOR PRINCIPAL --- */
-.app-container {
-    padding-top: 110px; /* Aumentamos el espacio para que la cabecera fija no tape las cajas */
-    max-width: 800px;
-    margin: 0 auto;
-    padding-left: 15px;
-    padding-right: 15px;
 }
 
 .avatar-container {
@@ -194,13 +186,14 @@ body {
     margin-top: 2px;
 }
 
-/* --- BOTONES DE PESTAÑA SUPERIORES (ZONA ROJA) --- */
+/* --- BOTONES DE PESTAÑA SUPERIORES --- */
 .top-nav-buttons {
     display: flex;
     gap: 8px;
     background: #eef2f5;
     padding: 4px;
     border-radius: 10px;
+    overflow-x: auto;
 }
 
 body.dark-mode .top-nav-buttons {
@@ -216,6 +209,7 @@ body.dark-mode .top-nav-buttons {
     font-weight: 600;
     color: #555;
     cursor: pointer;
+    white-space: nowrap;
     transition: all 0.2s ease;
 }
 
@@ -330,7 +324,7 @@ body.dark-mode .nav-tab-btn {
     justify-content: center;
     align-items: center;
     z-index: 2000;
-    padding: 20px; /* Margen de seguridad alrededor para que no pegue a los bordes en móviles */
+    padding: 20px;
     box-sizing: border-box;
 }
 
@@ -349,8 +343,9 @@ body.dark-mode .nav-tab-btn {
     overflow-y: auto;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
-    margin: 0 auto; /* Garantiza que no se desplace hacia ningún lado */
+    margin: 0 auto;
 }
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -366,202 +361,15 @@ body.dark-mode .nav-tab-btn {
     color: var(--text-light);
 }
 
-/* --- RESPONSIVE / MÓVILES --- */
-@media (max-width: 600px) {
-    .modern-form {
-        grid-template-columns: 1fr;
-    }
-    .btn-primary-large {
-        grid-column: span 1;
-    }
-}
-
-/* --- ESTILOS BONITOS PARA EL DESGLOSE --- */
-.desglose-header-container {
+/* --- FILTROS HISTORIAL --- */
+.filtros-historial {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
 }
 
-.subtitle-text {
-    font-size: 0.85rem;
-    color: #7f8c8d;
-    margin-top: 2px;
-}
-
-.desglose-filtros {
-    display: flex;
-    gap: 8px;
-}
-
-.select-filtro {
-    padding: 8px 12px;
-    border: 1px solid #dcdfe6;
-    border-radius: 8px;
-    background: var(--card-bg);
-    color: var(--text-light);
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-}
-
-.card-total-periodo {
-    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-    border-left: 5px solid var(--primary);
-    padding: 15px 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-body.dark-mode .card-total-periodo {
-    background: linear-gradient(135deg, #2d2218, #3a2b1c);
-}
-
-.card-total-periodo span {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: var(--primary-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.card-total-periodo h2 {
-    font-size: 1.8rem;
-    color: #d35400;
-    margin-top: 4px;
-}
-
-/* Tarjeta individual por categoría */
-.categoria-card {
-    background: var(--card-bg);
-    border: 1px solid rgba(0,0,0,0.06);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    transition: transform 0.2s ease;
-}
-
-.categoria-card:hover {
-    transform: translateY(-2px);
-}
-
-.categoria-info-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.categoria-nombre {
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-.monto-periodo {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--danger);
-}
-
-.monto-historico-label {
-    font-size: 0.8rem;
-    color: #7f8c8d;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed #eee;
-}
-
-body.dark-mode .monto-historico-label {
-    border-top-color: #333;
-}
-
-/* Asegurar que la gráfica se muestre siempre con buen tamaño */
-#graficoGastos {
-    width: 100% !important;
-    height: 220px !important;
-}
-
-/* Contenedor del botón de borrado general */
-.contenedor-borrar-general {
-    margin-top: 30px;
-    text-align: center;
-    border-top: 1px dashed var(--border-color);
-    padding-top: 20px;
-}
-
-/* Estilo del botón de borrado general */
-.btn-borrar-general {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s ease;
-}
-
-.btn-borrar-general:hover {
-    background-color: #c0392b;
-}
-
-/* --- BOTONES DE FILTRO HISTORIAL (ADAPTADOS A MODO OSCURO) --- */
-.filtros-historial {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
-    justify-content: center;
-}
-
-.filtros-historial .btn-filtro {
-    background-color: var(--card-bg, #ffffff);
-    color: var(--text-color, #333333);
-    border: 1px solid var(--border-color, #ccc);
-    padding: 8px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-.filtros-historial .btn-filtro:hover {
-    opacity: 0.85;
-}
-
-/* El botón activo siempre destaca con su fondo azul y texto blanco legible */
-.filtros-historial .btn-filtro.active {
-    background-color: #3498db;
-    color: #ffffff !important;
-    border-color: #3498db;
-}
-
-/* Ajuste específico de bordes para que se vean bien en modo oscuro */
-body.dark-mode .filtros-historial .btn-filtro {
-    border-color: #444444;
-}
-
-/* --- CORRECCIÓN DEFINITIVA FILTROS HISTORIAL (MODO CLARO Y OSCURO) --- */
-.filtros-historial {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
-    justify-content: center;
-}
-
-/* Modo Normal (Claro) */
 .filtros-historial .btn-filtro {
     background-color: #ffffff;
     color: #333333;
@@ -574,59 +382,41 @@ body.dark-mode .filtros-historial .btn-filtro {
     transition: all 0.2s ease;
 }
 
-.filtros-historial .btn-filtro:hover {
-    background-color: #f0f0f0;
-}
-
 .filtros-historial .btn-filtro.active {
     background-color: #3498db;
     color: #ffffff !important;
     border-color: #3498db;
 }
 
-/* Modo Oscuro Forzado para los Filtros */
 body.dark-mode .filtros-historial .btn-filtro {
     background-color: #2c3e50 !important;
     color: #ffffff !important;
     border: 1px solid #4a6fa5 !important;
 }
 
-body.dark-mode .filtros-historial .btn-filtro:hover {
-    background-color: #34495e !important;
-}
-
 body.dark-mode .filtros-historial .btn-filtro.active {
     background-color: #3498db !important;
     color: #ffffff !important;
-    border-color: #5dade2 !important;
 }
 
-/* --- SOLUCIÓN DEFINITIVA MODO OSCURO (GLOBAL) --- */
-
-/* 1. Fuerza al navegador a entender que la app soporta modo oscuro nativo */
+/* --- MODO OSCURO GLOBAL --- */
 body.dark-mode {
     color-scheme: dark;
 }
 
-/* 2. Todos los inputs, selects y textareas en modo oscuro */
 body.dark-mode input,
 body.dark-mode select,
-body.dark-mode textarea,
-body.dark-mode .form-control,
-body.dark-mode .input-group input {
+body.dark-mode textarea {
     background-color: #1e293b !important;
     color: #ffffff !important;
-    color-scheme: dark;
     border: 1px solid #475569 !important;
 }
 
-/* 3. Asegurar que el texto dentro sea blanco sí o sí */
 body.dark-mode input::placeholder {
     color: #94a3b8 !important;
     opacity: 1;
 }
 
-/* 4. Forzar textos de las tarjetas e historial en oscuro */
 body.dark-mode, 
 body.dark-mode p, 
 body.dark-mode span, 
@@ -638,46 +428,8 @@ body.dark-mode h3 {
     color: var(--text-color, #f8fafc);
 }
 
-/* --- FORZAR SELECTS EN MODO OSCURO SIN QUE EL NAVEGADOR LOS BLOQUEE --- */
-body.dark-mode select {
-    background-color: #1e293b !important;
-    color: #ffffff !important;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    /* Añadimos una flechita blanca para que se vea bien el desplegable */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 12px center !important;
-    background-size: 16px !important;
-    padding-right: 35px !important;
-}
-
-body.dark-mode select option {
-    background-color: #1e293b !important;
-    color: #ffffff !important;
-}
-
-/* --- ATAQUE DE FUERZA BRUTA PARA SELECTS EN MODO OSCURO --- */
-body.dark-mode select,
-body.dark-mode select option,
-body.dark-mode .form-control select,
-body.dark-mode .input-group select {
-    background-color: #1e293b !important;
-    color: #ffffff !important;
-    fill: #ffffff !important;
-}
-
-/* Forzar el color de las letras dentro del select seleccionado */
-body.dark-mode select option:checked,
-body.dark-mode select option:hover {
-    background-color: #334155 !important;
-    color: #ffffff !important;
-}
-
-/* --- CORRECCIÓN DEFINITIVA DE INICIO EN MÓVIL --- */
+/* --- ADAPTACIÓN RESPONSIVE TOTAL PARA MÓVILES --- */
 @media (max-width: 768px) {
-    /* 1. Las tarjetas de resumen (Balance, Ingresos, Gastos) en columna vertical */
     .summary-cards {
         display: flex !important;
         flex-direction: column !important;
@@ -690,7 +442,6 @@ body.dark-mode select option:hover {
         box-sizing: border-box !important;
     }
 
-    /* 2. El formulario de "Añadir Movimiento" en una sola columna vertical */
     .modern-form {
         display: flex !important;
         flex-direction: column !important;
@@ -706,9 +457,43 @@ body.dark-mode select option:hover {
         box-sizing: border-box !important;
     }
 
-    /* Botón grande de guardar adaptado al ancho completo */
     .btn-primary-large {
         width: 100% !important;
         grid-column: span 1 !important;
+    }
+
+    /* Solución definitiva para la pantalla de Gastos Fijos en móvil */
+    #secGastosFijos, 
+    div[id*="GastosFijos"],
+    .gastos-fijos-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        padding: 5px !important;
+        box-sizing: border-box !important;
+    }
+
+    #secGastosFijos form, 
+    div[id*="GastosFijos"] form,
+    .gastos-fijos-form {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 12px !important;
+        margin-top: 15px !important;
+    }
+
+    #secGastosFijos input, 
+    #secGastosFijos select, 
+    #secGastosFijos button,
+    div[id*="GastosFijos"] input, 
+    div[id*="GastosFijos"] select, 
+    div[id*="GastosFijos"] button {
+        width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
     }
 }
